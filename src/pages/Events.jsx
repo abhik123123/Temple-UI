@@ -3,12 +3,15 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useUpcomingEvents } from '../hooks/useAPI';
 import { eventsAPI } from '../services/api';
+import EventRegistrationModal from '../components/EventRegistrationModal';
 
 export default function Events() {
   const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
   const { events: backendEvents, loading, error, refetch } = useUpcomingEvents();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedEventForRegistration, setSelectedEventForRegistration] = useState(null);
+  const [registeredEvents, setRegisteredEvents] = useState(new Set());
   const [formData, setFormData] = useState({
     eventName: '',
     description: '',
@@ -74,6 +77,18 @@ export default function Events() {
     } catch (err) {
       alert('Failed to delete event: ' + (err.response?.data?.message || err.message));
     }
+  };
+
+  const handleRegisterClick = (event) => {
+    console.log('Register button clicked for:', event.eventName);
+    console.log('Setting selectedEventForRegistration to:', event);
+    setSelectedEventForRegistration(event);
+    console.log('State should be set now');
+  };
+
+  const handleRegistrationSuccess = (response) => {
+    console.log('Registration successful:', response);
+    setRegisteredEvents(prev => new Set([...prev, selectedEvent.id]));
   };
 
   const handleInputChange = (e) => {
@@ -277,7 +292,21 @@ export default function Events() {
                     </button>
                   )}
                 </div>
-                <button className="btn" style={{ marginTop: '1rem', width: '100%' }}>Register</button>
+                <button 
+                  onClick={() => {
+                    console.log('Register button onClick triggered');
+                    handleRegisterClick(event);
+                  }}
+                  className="btn" 
+                  style={{ 
+                    marginTop: '1rem', 
+                    width: '100%',
+                    background: registeredEvents.has(event.id) ? '#b0bec5' : undefined
+                  }}
+                  disabled={registeredEvents.has(event.id)}
+                >
+                  {registeredEvents.has(event.id) ? '✅ Registered' : 'Register'}
+                </button>
               </div>
             </div>
           ))}
@@ -287,6 +316,14 @@ export default function Events() {
           <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#999' }}>
             No events scheduled at the moment.
           </div>
+        )}
+
+        {selectedEventForRegistration && (
+          <EventRegistrationModal 
+            event={selectedEventForRegistration}
+            onClose={() => setSelectedEventForRegistration(null)}
+            onSuccess={handleRegistrationSuccess}
+          />
         )}
       </div>
     </div>

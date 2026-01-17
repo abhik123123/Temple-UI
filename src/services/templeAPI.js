@@ -66,7 +66,11 @@ export const eventsAPI = {
 
   // Delete event (Admin only)
   delete: (id) => 
-    api.delete(`/events/${id}`)
+    api.delete(`/events/${id}`),
+
+  // Register for event
+  register: (registrationData) => 
+    api.post('/events/register', registrationData)
 };
 
 /**
