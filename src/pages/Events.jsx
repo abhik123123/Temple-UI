@@ -5,6 +5,35 @@ import { useUpcomingEvents } from '../hooks/useAPI';
 import { eventsAPI } from '../services/api';
 import EventRegistrationModal from '../components/EventRegistrationModal';
 
+// Helper function to get the API base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+
+// Helper function to construct full image URL
+const getImageUrl = (imageData) => {
+  if (!imageData) return null;
+  
+  // If it's already a full URL (http:// or https://)
+  if (typeof imageData === 'string' && (imageData.startsWith('http://') || imageData.startsWith('https://'))) {
+    return imageData;
+  }
+  
+  // If it's a relative path, construct full URL
+  if (typeof imageData === 'string') {
+    // Remove leading slash if present to avoid double slashes
+    const cleanPath = imageData.startsWith('/') ? imageData.substring(1) : imageData;
+    return `${API_BASE_URL}/${cleanPath}`;
+  }
+  
+  // If backend returns an object with photoUrl or similar
+  if (typeof imageData === 'object') {
+    if (imageData.photoUrl) return getImageUrl(imageData.photoUrl);
+    if (imageData.imageUrl) return getImageUrl(imageData.imageUrl);
+    if (imageData.url) return getImageUrl(imageData.url);
+  }
+  
+  return null;
+};
+
 export default function Events() {
   const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
@@ -254,9 +283,37 @@ export default function Events() {
         <div className="cards-grid">
           {displayEvents.map(event => (
             <div key={event.id} className="card">
-              <div className="card-image" style={{ fontSize: '2.5rem', padding: '1rem', textAlign: 'center', background: '#f5e6d3' }}>
-                {event.icon || '📅'}
-              </div>
+              {/* Event Image */}
+              {event.imageUrl && (
+                <div style={{ 
+                  width: '100%', 
+                  height: '200px', 
+                  overflow: 'hidden',
+                  backgroundColor: '#f5e6d3'
+                }}>
+                  <img 
+                    src={event.imageUrl} 
+                    alt={event.eventName}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                    onError={(e) => {
+                      // Hide image if it fails to load and show icon instead
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+              
+              {/* Show icon only if no image */}
+              {!event.imageUrl && (
+                <div className="card-image" style={{ fontSize: '2.5rem', padding: '1rem', textAlign: 'center', background: '#f5e6d3' }}>
+                  {event.icon || '📅'}
+                </div>
+              )}
+              
               <div className="card-content">
                 <h3>{event.eventName}</h3>
                 <p><strong>📅 Date:</strong> {formatDate(event.eventDate)}</p>

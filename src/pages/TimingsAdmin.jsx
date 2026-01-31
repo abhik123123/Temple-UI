@@ -140,7 +140,12 @@ export default function TimingsAdmin() {
     try {
       setSaving(true);
       for (const [day, timing] of Object.entries(timings)) {
-        await timingsAPI.update(day, timing);
+        // Ensure time values have seconds component (HH:mm:ss format)
+        const formattedTiming = {
+          open: timing.open ? (timing.open.split(':').length === 2 ? timing.open + ':00' : timing.open) : null,
+          close: timing.close ? (timing.close.split(':').length === 2 ? timing.close + ':00' : timing.close) : null
+        };
+        await timingsAPI.update(day, formattedTiming);
       }
       setOriginalTimings(timings);
       setHasChanges(false);

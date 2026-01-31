@@ -3,6 +3,35 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { eventsAPI } from '../services/templeAPI';
 
+// Helper function to get the API base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+
+// Helper function to construct full image URL
+const getImageUrl = (imageData) => {
+  if (!imageData) return null;
+  
+  // If it's already a full URL (http:// or https://)
+  if (typeof imageData === 'string' && (imageData.startsWith('http://') || imageData.startsWith('https://'))) {
+    return imageData;
+  }
+  
+  // If it's a relative path, construct full URL
+  if (typeof imageData === 'string') {
+    // Remove leading slash if present to avoid double slashes
+    const cleanPath = imageData.startsWith('/') ? imageData.substring(1) : imageData;
+    return `${API_BASE_URL}/${cleanPath}`;
+  }
+  
+  // If backend returns an object with photoUrl or similar
+  if (typeof imageData === 'object') {
+    if (imageData.photoUrl) return getImageUrl(imageData.photoUrl);
+    if (imageData.imageUrl) return getImageUrl(imageData.imageUrl);
+    if (imageData.url) return getImageUrl(imageData.url);
+  }
+  
+  return null;
+};
+
 const translations = {
   en: {
     events: 'Events',
@@ -154,7 +183,20 @@ export default function EventsAdmin() {
     try {
       setLoading(true);
       const data = await eventsAPI.getAll();
-      setEvents(Array.isArray(data) ? data : data?.data || []);
+      const eventsArray = Array.isArray(data) ? data : data?.data || [];
+      
+      // Process events to convert image URLs
+      const processedEvents = eventsArray.map(event => ({
+        ...event,
+        // Map backend field names to frontend field names
+        title: event.eventName || event.title,
+        date: event.eventDate || event.date,
+        // Process imageUrl - backend may return photoUrl, imageUrl, or image object
+        imageUrl: getImageUrl(event.photoUrl || event.imageUrl || event.image)
+      }));
+      
+      console.log('Fetched events:', processedEvents);
+      setEvents(processedEvents);
       setError(null);
     } catch (err) {
       // Use mock data if backend is not available
@@ -244,37 +286,46 @@ export default function EventsAdmin() {
           eventName: formData.title,
           description: formData.description,
           eventDate: formData.date,
-          startTime: formData.startTime + ':00', // Add seconds if not present
-          endTime: formData.endTime + ':00',     // Add seconds if not present
+          startTime: formData.startTime ? (formData.startTime.split(':').length === 2 ? formData.startTime + ':00' : formData.startTime) : null,
+          endTime: formData.endTime ? (formData.endTime.split(':').length === 2 ? formData.endTime + ':00' : formData.endTime) : null,
           location: formData.location,
           category: formData.category,
           status: 'Upcoming'
         };
         
-        // Append event data as JSON string
-        submitData.append('event', JSON.stringify(eventData), { type: 'application/json' });
-        // Append photo file with correct part name
-        submitData.append('photo', formData.imageFile);
+        // Append event data as JSON blob with proper content type
+        const eventBlob = new Blob([JSON.stringify(eventData)], {
+          type: 'application/json'
+        });
+        submitData.append('event', eventBlob);
+        
+        // Append photo file with correct part name and ensure JPEG mime type
+        submitData.append('photo', formData.imageFile, formData.imageFile.name);
         
         console.log('Submitting with image:', {
+          operation: editingId ? 'update' : 'create',
           imageFile: formData.imageFile.name,
           imageType: formData.imageFile.type,
-          imageSize: formData.imageFile.size
+          imageSize: formData.imageFile.size,
+          eventData: eventData
         });
       } else {
-        // Send as JSON when no new file
+        // Send as JSON when no new file (for updates without image change)
         submitData = {
           eventName: formData.title,
           description: formData.description,
           eventDate: formData.date,
-          startTime: formData.startTime + ':00',
-          endTime: formData.endTime + ':00',
+          startTime: formData.startTime ? (formData.startTime.split(':').length === 2 ? formData.startTime + ':00' : formData.startTime) : null,
+          endTime: formData.endTime ? (formData.endTime.split(':').length === 2 ? formData.endTime + ':00' : formData.endTime) : null,
           location: formData.location,
           category: formData.category,
           status: 'Upcoming'
         };
         
-        console.log('Submitting without image:', submitData);
+        console.log('Submitting without image:', {
+          operation: editingId ? 'update' : 'create',
+          data: submitData
+        });
       }
       
       if (editingId) {
@@ -288,6 +339,11 @@ export default function EventsAdmin() {
       resetForm();
     } catch (err) {
       console.error('Submit error:', err);
+      console.error('Error details:', {
+        response: err.response?.data,
+        status: err.response?.status,
+        headers: err.response?.headers
+      });
       alert(err.response?.data?.message || err.message || t.error);
     }
   };
@@ -716,6 +772,29 @@ export default function EventsAdmin() {
                   transition: 'transform 0.3s ease'
                 }}
               >
+                {/* Event Image */}
+                {event.imageUrl && (
+                  <div style={{ 
+                    width: '100%', 
+                    height: '200px', 
+                    overflow: 'hidden',
+                    backgroundColor: '#f5f5f5'
+                  }}>
+                    <img 
+                      src={event.imageUrl} 
+                      alt={event.title}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+                
                 <div style={{
                   padding: '20px',
                   backgroundColor: 'linear-gradient(135deg, #0B1C3F 0%, #112A57 100%)',

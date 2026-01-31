@@ -46,8 +46,11 @@ export const eventsAPI = {
   create: (eventData) => {
     // Check if eventData is FormData (for file uploads)
     if (eventData instanceof FormData) {
+      // Don't set Content-Type - let browser set it with boundary
       return api.post('/events', eventData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': undefined // Remove default Content-Type
+        }
       });
     }
     return api.post('/events', eventData);
@@ -57,8 +60,11 @@ export const eventsAPI = {
   update: (id, eventData) => {
     // Check if eventData is FormData (for file uploads)
     if (eventData instanceof FormData) {
+      // Don't set Content-Type - let browser set it with boundary
       return api.put(`/events/${id}`, eventData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': undefined // Remove default Content-Type
+        }
       });
     }
     return api.put(`/events/${id}`, eventData);

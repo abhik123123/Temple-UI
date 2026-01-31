@@ -1,6 +1,35 @@
 import { useState, useEffect } from 'react';
 import { templeTimingsAPI, eventsAPI } from '../services/api';
 
+// Helper function to get the API base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+
+// Helper function to construct full image URL
+const getImageUrl = (imageData) => {
+  if (!imageData) return null;
+  
+  // If it's already a full URL (http:// or https://)
+  if (typeof imageData === 'string' && (imageData.startsWith('http://') || imageData.startsWith('https://'))) {
+    return imageData;
+  }
+  
+  // If it's a relative path, construct full URL
+  if (typeof imageData === 'string') {
+    // Remove leading slash if present to avoid double slashes
+    const cleanPath = imageData.startsWith('/') ? imageData.substring(1) : imageData;
+    return `${API_BASE_URL}/${cleanPath}`;
+  }
+  
+  // If backend returns an object with photoUrl or similar
+  if (typeof imageData === 'object') {
+    if (imageData.photoUrl) return getImageUrl(imageData.photoUrl);
+    if (imageData.imageUrl) return getImageUrl(imageData.imageUrl);
+    if (imageData.url) return getImageUrl(imageData.url);
+  }
+  
+  return null;
+};
+
 /**
  * Hook to fetch temple timings from backend
  * @returns {object} { timings, loading, error }
@@ -48,7 +77,17 @@ export const useUpcomingEvents = () => {
       const response = await eventsAPI.getUpcoming();
       console.log('Events response:', response);
       console.log('Events data:', response.data);
-      setEvents(Array.isArray(response.data) ? response.data : response.data.events || []);
+      
+      // Process events to convert image URLs
+      const eventsArray = Array.isArray(response.data) ? response.data : response.data.events || [];
+      const processedEvents = eventsArray.map(event => ({
+        ...event,
+        // Process imageUrl - backend may return photoUrl, imageUrl, or image object
+        imageUrl: getImageUrl(event.photoUrl || event.imageUrl || event.image)
+      }));
+      
+      console.log('Processed events with image URLs:', processedEvents);
+      setEvents(processedEvents);
       setError(null);
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Failed to fetch events';
