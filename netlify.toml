@@ -5,6 +5,9 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # Public value (it ends up in the browser bundle anyway), so it lives here
+  # rather than in Netlify's UI. Change it if the Render URL changes.
+  REACT_APP_API_URL = "https://temple-backend-vtyo.onrender.com/api"
 
 # Single-page app: let React Router handle every path (/events, /home/admin, ...)
 [[redirects]]
