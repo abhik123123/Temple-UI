@@ -97,7 +97,7 @@ export default function StaffAdmin() {
     email: '',
     phoneNumber: '',
     experience: '',
-    bio: ''
+    biography: ''
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
@@ -150,7 +150,7 @@ export default function StaffAdmin() {
       email: staffMember.email || '',
       phoneNumber: staffMember.phoneNumber || '',
       experience: staffMember.experience ?? '',
-      bio: staffMember.bio || ''
+      biography: staffMember.biography || ''
     });
     setEditingId(staffMember.id);
     setShowForm(true);
@@ -173,7 +173,7 @@ export default function StaffAdmin() {
       email: '',
       phoneNumber: '',
       experience: '',
-      bio: ''
+      biography: ''
     });
     setEditingId(null);
     setShowForm(false);
@@ -396,8 +396,8 @@ export default function StaffAdmin() {
                   {t.description}
                 </label>
                 <textarea
-                  name="bio"
-                  value={formData.bio}
+                  name="biography"
+                  value={formData.biography}
                   onChange={handleInputChange}
                   rows="4"
                   style={{
@@ -502,7 +502,7 @@ export default function StaffAdmin() {
                     ⭐ {member.experience} years experience
                   </p>
                   <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '13px', lineHeight: '1.4' }}>
-                    {member.bio && (member.bio.length > 100 ? `${member.bio.substring(0, 100)}…` : member.bio)}
+                    {member.biography && (member.biography.length > 100 ? `${member.biography.substring(0, 100)}…` : member.biography)}
                   </p>
 
                   <div style={{ display: 'flex', gap: '10px' }}>

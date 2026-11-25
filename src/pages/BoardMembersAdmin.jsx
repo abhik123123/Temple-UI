@@ -101,7 +101,7 @@ export default function BoardMembersAdmin() {
     email: '',
     phoneNumber: '',
     experience: '',
-    bio: ''
+    biography: ''
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
@@ -156,7 +156,7 @@ export default function BoardMembersAdmin() {
       email: member.email || '',
       phoneNumber: member.phoneNumber || '',
       experience: member.experience ?? '',
-      bio: member.bio || ''
+      biography: member.biography || ''
     });
     setEditingId(member.id);
     setShowForm(true);
@@ -180,7 +180,7 @@ export default function BoardMembersAdmin() {
       email: '',
       phoneNumber: '',
       experience: '',
-      bio: ''
+      biography: ''
     });
     setEditingId(null);
     setShowForm(false);
@@ -429,8 +429,8 @@ export default function BoardMembersAdmin() {
                   {t.description}
                 </label>
                 <textarea
-                  name="bio"
-                  value={formData.bio}
+                  name="biography"
+                  value={formData.biography}
                   onChange={handleInputChange}
                   rows="4"
                   style={{
@@ -538,7 +538,7 @@ export default function BoardMembersAdmin() {
                     ⭐ {member.experience} years experience
                   </p>
                   <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '13px', lineHeight: '1.4' }}>
-                    {member.bio && (member.bio.length > 100 ? `${member.bio.substring(0, 100)}…` : member.bio)}
+                    {member.biography && (member.biography.length > 100 ? `${member.biography.substring(0, 100)}…` : member.biography)}
                   </p>
 
                   <div style={{ display: 'flex', gap: '10px' }}>

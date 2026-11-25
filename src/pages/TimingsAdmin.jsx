@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { timingsAPI } from '../services/api';
@@ -25,7 +25,13 @@ const translations = {
     unsavedChanges: 'You have unsaved changes',
     accessDenied: 'Access Denied',
     adminOnly: 'Only admins can access this page',
-    backToHome: 'Back to Home'
+    backToHome: 'Back to Home',
+    addSession: 'Add session',
+    notes: 'Notes',
+    day: 'Day',
+    delete: 'Delete',
+    noSessions: 'Closed',
+    confirmDelete: 'Delete this session?'
   },
   te: {
     timings: 'మందిర సమయాలు',
@@ -73,50 +79,60 @@ const translations = {
   }
 };
 
-// Mock data
-const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const EMPTY_SESSION = { dayOfWeek: 'Monday', openingTime: '06:00', closingTime: '21:00', specialNotes: '' };
 
-const DEFAULT_TIMING = { open: '06:00', close: '21:00', notes: '' };
+const cell = { padding: '8px', borderBottom: '1px solid #eee', verticalAlign: 'middle' };
+const input = { padding: '6px 8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '14px' };
+const button = (bg) => ({
+  padding: '6px 12px', backgroundColor: bg, color: 'white', border: 'none',
+  borderRadius: '4px', cursor: 'pointer', fontSize: '13px', marginRight: '6px'
+});
 
-/** API list [{ dayOfWeek: 'MONDAY', openingTime, closingTime, specialNotes }] → { monday: { open, close, notes } } */
-const toTimingMap = (list) =>
-  DAYS.reduce((acc, day) => {
-    const row = (Array.isArray(list) ? list : []).find((r) => String(r.dayOfWeek).toLowerCase() === day);
-    acc[day] = row
-      ? { open: toInputTime(row.openingTime), close: toInputTime(row.closingTime), notes: row.specialNotes || '' }
-      : { ...DEFAULT_TIMING };
-    return acc;
-  }, {});
+const toForm = (row) => ({
+  dayOfWeek: row.dayOfWeek,
+  openingTime: toInputTime(row.openingTime),
+  closingTime: toInputTime(row.closingTime),
+  specialNotes: row.specialNotes || ''
+});
 
+const toPayload = (form) => ({
+  dayOfWeek: form.dayOfWeek,
+  openingTime: toApiTime(form.openingTime),
+  closingTime: toApiTime(form.closingTime),
+  specialNotes: form.specialNotes.trim() || null
+});
+
+const validate = (form) => {
+  if (!form.openingTime || !form.closingTime) return 'Opening and closing times are required.';
+  if (form.openingTime >= form.closingTime) return 'Closing time must be after opening time.';
+  return null;
+};
+
+/**
+ * Weekly opening sessions. A day can have several sessions (e.g. morning and
+ * evening); each row is saved independently.
+ */
 export default function TimingsAdmin() {
   const { language } = useLanguage();
   const { isAdmin } = useAuth();
-  const t = translations[language] || translations.en;
+  const t = { ...translations.en, ...(translations[language] || {}) };
 
-  const [timings, setTimings] = useState(() => toTimingMap([]));
-  const [originalTimings, setOriginalTimings] = useState(() => toTimingMap([]));
+  const [rows, setRows] = useState([]);
+  const [edits, setEdits] = useState({});
+  const [newSession, setNewSession] = useState(EMPTY_SESSION);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
-  const [saving, setSaving] = useState(false);
 
-  const hasChanges = JSON.stringify(timings) !== JSON.stringify(originalTimings);
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchTimings();
-    } else {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin]);
-
-  const fetchTimings = async () => {
+  const load = async () => {
     try {
       setLoading(true);
-      const map = toTimingMap(await timingsAPI.getAll());
-      setTimings(map);
-      setOriginalTimings(map);
+      const data = await timingsAPI.getAll();
+      const list = Array.isArray(data) ? data : [];
+      setRows(list);
+      setEdits(Object.fromEntries(list.map((r) => [r.id, toForm(r)])));
       setError(null);
     } catch (err) {
       setError(err.message || t.error);
@@ -125,290 +141,171 @@ export default function TimingsAdmin() {
     }
   };
 
-  const handleTimeChange = (day, field, value) => {
+  useEffect(() => {
+    if (isAdmin) load();
+    else setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
+
+  const changeRow = (id, field, value) => {
     setNotice(null);
-    setTimings((prev) => ({ ...prev, [day]: { ...prev[day], [field]: value } }));
+    setEdits((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
   };
 
-  const handleSave = async () => {
-    const invalid = DAYS.find((day) => timings[day].open && timings[day].close && timings[day].open >= timings[day].close);
-    if (invalid) {
-      setError(`Closing time must be after opening time (${invalid}).`);
-      return;
-    }
-    const changedDays = DAYS.filter((day) => JSON.stringify(timings[day]) !== JSON.stringify(originalTimings[day]));
+  const isDirty = (row) => JSON.stringify(edits[row.id]) !== JSON.stringify(toForm(row));
+
+  const run = async (id, action, successMessage) => {
+    setBusyId(id);
+    setError(null);
+    setNotice(null);
     try {
-      setSaving(true);
-      setError(null);
-      await Promise.all(
-        changedDays.map((day) =>
-          timingsAPI.update(day, {
-            openingTime: toApiTime(timings[day].open),
-            closingTime: toApiTime(timings[day].close),
-            specialNotes: timings[day].notes || null,
-          })
-        )
-      );
-      setOriginalTimings(timings);
-      setNotice(t.success);
+      await action();
+      await load();
+      setNotice(successMessage);
     } catch (err) {
       setError(`${t.error}: ${err.message}`);
     } finally {
-      setSaving(false);
+      setBusyId(null);
     }
   };
 
-  const handleCancel = () => {
-    setTimings(originalTimings);
-    setError(null);
+  const saveRow = (row) => {
+    const problem = validate(edits[row.id]);
+    if (problem) return setError(problem);
+    return run(row.id, () => timingsAPI.update(row.id, toPayload(edits[row.id])), t.success);
   };
 
-  if (loading) {
-    return (
-      <div style={{ padding: '40px 20px', textAlign: 'center', minHeight: '60vh' }}>
-        <p>{t.loading}</p>
-      </div>
-    );
-  }
+  const deleteRow = (row) => {
+    if (!window.confirm(t.confirmDelete)) return undefined;
+    return run(row.id, () => timingsAPI.delete(row.id), t.success);
+  };
 
-  // Check admin access
+  const addSession = (e) => {
+    e.preventDefault();
+    const problem = validate(newSession);
+    if (problem) return setError(problem);
+    return run('new', async () => {
+      await timingsAPI.create(toPayload(newSession));
+      setNewSession(EMPTY_SESSION);
+    }, t.success);
+  };
+
   if (!isAdmin) {
     return (
-      <div style={{
-        padding: '40px 20px',
-        minHeight: '70vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center'
-      }}>
-        <h2 style={{ color: '#d32f2f', marginBottom: '20px' }}>{t.accessDenied}</h2>
-        <p style={{ color: '#666', marginBottom: '30px' }}>{t.adminOnly}</p>
-        <a href="/" style={{
-          display: 'inline-block',
-          padding: '10px 20px',
-          backgroundColor: '#0B1C3F',
-          color: 'white',
-          textDecoration: 'none',
-          borderRadius: '4px',
-          fontWeight: '500'
-        }}>
-          {t.backToHome}
-        </a>
+      <div style={{ padding: '40px 20px', minHeight: '60vh', textAlign: 'center' }}>
+        <h2 style={{ color: '#d32f2f' }}>{t.accessDenied}</h2>
+        <p style={{ color: '#666' }}>{t.adminOnly}</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '40px 20px', minHeight: '70vh', backgroundColor: '#f9f9f9' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '30px' }}>
-          <h1 style={{ fontSize: '2rem', color: '#0B1C3F', margin: '0 0 10px 0' }}>
-            ⏰ {t.timings}
-          </h1>
-          {hasChanges && (
-            <p style={{ color: '#E6B325', margin: 0, fontWeight: '500' }}>
-              ⚠️ {t.unsavedChanges}
-            </p>
-          )}
+    <div style={{ padding: '40px 20px', maxWidth: '1000px', margin: '0 auto', minHeight: '70vh' }}>
+      <h1 style={{ color: '#0B1C3F', marginBottom: '8px' }}>⏰ {t.timings}</h1>
+      <p style={{ color: '#666', marginBottom: '24px' }}>{t.weeklySchedule}</p>
+
+      {error && (
+        <div role="alert" style={{ padding: '12px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '4px', marginBottom: '16px' }}>
+          {error}
         </div>
-
-        {error && (
-          <div style={{
-            padding: '15px',
-            backgroundColor: '#ffebee',
-            color: '#c62828',
-            borderRadius: '4px',
-            marginBottom: '20px'
-          }}>
-            {error}
-          </div>
-        )}
-
-        {notice && (
-          <div role="status" style={{
-            padding: '15px',
-            backgroundColor: '#e8f5e9',
-            color: '#2e7d32',
-            borderRadius: '4px',
-            marginBottom: '20px'
-          }}>
-            {notice}
-          </div>
-        )}
-
-        {/* Timings Form */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '30px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          marginBottom: '30px'
-        }}>
-          <h2 style={{ color: '#0B1C3F', marginBottom: '25px', marginTop: 0 }}>
-            {t.weeklySchedule}
-          </h2>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '25px',
-            marginBottom: '30px'
-          }}>
-            {DAYS.map(day => (
-              <div
-                key={day}
-                style={{
-                  padding: '20px',
-                  backgroundColor: '#f5f5f5',
-                  borderRadius: '8px',
-                  borderLeft: '4px solid #E6B325'
-                }}
-              >
-                <h4 style={{
-                  color: '#0B1C3F',
-                  margin: '0 0 15px 0',
-                  textTransform: 'capitalize',
-                  fontSize: '16px',
-                  fontWeight: '600'
-                }}>
-                  {t[day]}
-                </h4>
-
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    color: '#333'
-                  }}>
-                    {t.opening}
-                  </label>
-                  <input
-                    type="time"
-                    value={timings[day]?.open || '06:00'}
-                    onChange={(e) => handleTimeChange(day, 'open', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '10px' }}>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    color: '#333'
-                  }}>
-                    {t.closing}
-                  </label>
-                  <input
-                    type="time"
-                    value={timings[day]?.close || '21:00'}
-                    onChange={(e) => handleTimeChange(day, 'close', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-
-                <p style={{
-                  color: '#666',
-                  fontSize: '12px',
-                  margin: '10px 0 0 0',
-                  padding: '10px',
-                  backgroundColor: 'white',
-                  borderRadius: '4px',
-                  textAlign: 'center'
-                }}>
-                  {timings[day]?.open && timings[day]?.close ? 
-                    `${formatTime(timings[day].open)} - ${formatTime(timings[day].close)}` 
-                    : 'No timing set'
-                  }
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{
-            display: 'flex',
-            gap: '15px',
-            justifyContent: 'flex-end',
-            borderTop: '1px solid #eee',
-            paddingTop: '20px'
-          }}>
-            {hasChanges && (
-              <button
-                onClick={handleCancel}
-                disabled={saving}
-                style={{
-                  padding: '12px 30px',
-                  backgroundColor: '#f5f5f5',
-                  color: '#333',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  cursor: saving ? 'not-allowed' : 'pointer',
-                  fontWeight: '500',
-                  transition: 'all 0.3s ease',
-                  opacity: saving ? 0.6 : 1
-                }}
-                onMouseEnter={e => !saving && (e.target.style.backgroundColor = '#e8e8e8')}
-                onMouseLeave={e => !saving && (e.target.style.backgroundColor = '#f5f5f5')}
-              >
-                {t.cancel}
-              </button>
-            )}
-            <button
-              onClick={handleSave}
-              disabled={!hasChanges || saving}
-              style={{
-                padding: '12px 30px',
-                backgroundColor: hasChanges ? '#0B1C3F' : '#ccc',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: hasChanges && !saving ? 'pointer' : 'not-allowed',
-                fontWeight: '500',
-                transition: 'all 0.3s ease',
-                opacity: !hasChanges || saving ? 0.6 : 1
-              }}
-              onMouseEnter={e => hasChanges && !saving && (e.target.style.opacity = '0.9')}
-              onMouseLeave={e => hasChanges && !saving && (e.target.style.opacity = '1')}
-            >
-              {saving ? '💾 Saving...' : `💾 ${t.save}`}
-            </button>
-          </div>
+      )}
+      {notice && (
+        <div role="status" style={{ padding: '12px', backgroundColor: '#e8f5e9', color: '#2e7d32', borderRadius: '4px', marginBottom: '16px' }}>
+          {notice}
         </div>
+      )}
 
-        {/* Info Box */}
-        <div style={{
-          backgroundColor: '#e3f2fd',
-          border: '1px solid #90caf9',
-          borderRadius: '8px',
-          padding: '20px',
-          color: '#1565c0'
-        }}>
-          <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.6' }}>
-            💡 <strong>Tip:</strong> Set the opening and closing times for each day of the week. These timings will be displayed to visitors on the temple website.
-          </p>
+      {loading ? (
+        <p>{t.loading}</p>
+      ) : (
+        <div style={{ overflowX: 'auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#0B1C3F', color: '#E6B325', textAlign: 'left' }}>
+                <th style={cell}>{t.day}</th>
+                <th style={cell}>{t.opening}</th>
+                <th style={cell}>{t.closing}</th>
+                <th style={cell}>{t.notes}</th>
+                <th style={cell} aria-label="Actions" />
+              </tr>
+            </thead>
+            <tbody>
+              {DAYS.map((day) => {
+                const sessions = rows.filter((r) => r.dayOfWeek === day);
+                if (sessions.length === 0) {
+                  return (
+                    <tr key={day}>
+                      <td style={cell}><strong>{t[day.toLowerCase()] || day}</strong></td>
+                      <td style={{ ...cell, color: '#999' }} colSpan={4}>{t.noSessions}</td>
+                    </tr>
+                  );
+                }
+                return sessions.map((row, i) => {
+                  const form = edits[row.id] || toForm(row);
+                  return (
+                    <tr key={row.id}>
+                      <td style={cell}>{i === 0 && <strong>{t[day.toLowerCase()] || day}</strong>}</td>
+                      <td style={cell}>
+                        <input type="time" aria-label={`${day} ${t.opening}`} style={input} value={form.openingTime}
+                          onChange={(e) => changeRow(row.id, 'openingTime', e.target.value)} />
+                      </td>
+                      <td style={cell}>
+                        <input type="time" aria-label={`${day} ${t.closing}`} style={input} value={form.closingTime}
+                          onChange={(e) => changeRow(row.id, 'closingTime', e.target.value)} />
+                      </td>
+                      <td style={cell}>
+                        <input type="text" aria-label={`${day} ${t.notes}`} style={{ ...input, width: '100%' }} maxLength={255}
+                          value={form.specialNotes} onChange={(e) => changeRow(row.id, 'specialNotes', e.target.value)} />
+                      </td>
+                      <td style={{ ...cell, whiteSpace: 'nowrap' }}>
+                        <button type="button" style={button('#0B1C3F')} disabled={!isDirty(row) || busyId !== null}
+                          onClick={() => saveRow(row)}>
+                          {busyId === row.id ? t.loading : t.save}
+                        </button>
+                        <button type="button" style={button('#d32f2f')} disabled={busyId !== null}
+                          onClick={() => deleteRow(row)}>
+                          {t.delete}
+                        </button>
+                        <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+                          {formatTime(row.openingTime)} – {formatTime(row.closingTime)}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                });
+              })}
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
+
+      <form onSubmit={addSession} style={{ marginTop: '24px', padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <label>
+          <div style={{ fontWeight: 500, marginBottom: '4px' }}>{t.day}</div>
+          <select style={input} value={newSession.dayOfWeek}
+            onChange={(e) => setNewSession((s) => ({ ...s, dayOfWeek: e.target.value }))}>
+            {DAYS.map((d) => <option key={d} value={d}>{t[d.toLowerCase()] || d}</option>)}
+          </select>
+        </label>
+        <label>
+          <div style={{ fontWeight: 500, marginBottom: '4px' }}>{t.opening}</div>
+          <input type="time" required style={input} value={newSession.openingTime}
+            onChange={(e) => setNewSession((s) => ({ ...s, openingTime: e.target.value }))} />
+        </label>
+        <label>
+          <div style={{ fontWeight: 500, marginBottom: '4px' }}>{t.closing}</div>
+          <input type="time" required style={input} value={newSession.closingTime}
+            onChange={(e) => setNewSession((s) => ({ ...s, closingTime: e.target.value }))} />
+        </label>
+        <label style={{ flex: 1, minWidth: '200px' }}>
+          <div style={{ fontWeight: 500, marginBottom: '4px' }}>{t.notes}</div>
+          <input type="text" maxLength={255} style={{ ...input, width: '100%' }} value={newSession.specialNotes}
+            onChange={(e) => setNewSession((s) => ({ ...s, specialNotes: e.target.value }))} />
+        </label>
+        <button type="submit" style={button('#2e7d32')} disabled={busyId !== null}>
+          {busyId === 'new' ? t.loading : `+ ${t.addSession}`}
+        </button>
+      </form>
     </div>
   );
 }

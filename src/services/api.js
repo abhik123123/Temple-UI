@@ -52,13 +52,12 @@ export const boardMembersAPI = crud('board-members');
 export const donorsAPI = {
   ...crud('donors'),
   getStatistics: () => body(httpClient.get('/donors/statistics')),
+  /** Admin only: full records including contact details. */
+  getAllWithContacts: () => body(httpClient.get('/donors/admin/all')),
 };
 
-export const timingsAPI = {
-  getAll: () => body(httpClient.get('/timings')),
-  /** `day` is a lower- or upper-case English weekday, e.g. "monday". */
-  update: (day, timing) => body(httpClient.put(`/timings/${encodeURIComponent(day)}`, timing)),
-};
+/** Opening sessions: { id, dayOfWeek: "Monday", openingTime, closingTime, specialNotes }. A day may have several. */
+export const timingsAPI = crud('timings');
 
 export const subscriptionAPI = {
   subscribe: (email) => body(httpClient.post('/subscriptions/subscribe', { email })),

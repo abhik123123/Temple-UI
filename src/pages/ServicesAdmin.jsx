@@ -323,7 +323,7 @@ export default function ServicesAdmin() {
                     {t.price}
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="price"
                     value={formData.price}
                     onChange={handleInputChange}
@@ -466,7 +466,7 @@ export default function ServicesAdmin() {
 
                 <div style={{ padding: '20px' }}>
                   <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>
-                    💰 ₹{service.price || '0'}
+                    💰 {service.price || 'Free'}
                   </p>
                   <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '14px' }}>
                     ⏱️ {service.duration || '0'} minutes

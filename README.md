@@ -3,7 +3,7 @@
 React single-page app for the Raja Rajeshwara Devastanam website: public pages
 (events, services, timings, staff, board, donations, newsletter) and an admin
 area for temple staff. It talks to the Spring Boot backend in
-[`temple-backend`](../SpringBoot-Project) over a JSON REST API under `/api`.
+[temple-backend](https://github.com/abhik123123/temple-backend) over a JSON REST API under `/api`.
 
 ## Quick start (development)
 
@@ -60,8 +60,8 @@ its absolute URL at build time **and** add that origin to `connect-src` and
 `img-src` in `nginx/default.conf.template`, plus the backend's
 `APP_CORS_ALLOWED_ORIGINS`.
 
-The backend repository contains a `docker-compose.yml` that runs the database,
-backend and this UI together.
+The temple-backend repository contains a `docker-compose.yml` that runs
+PostgreSQL, the backend and this UI together.
 
 ## Project layout
 
