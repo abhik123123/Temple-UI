@@ -2,6 +2,10 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTempleTimings } from '../hooks/useAPI';
 import { formatTime } from '../utils/format';
 
+const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const templeToday = () =>
+  new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' }).format(new Date());
+
 export default function Timings() {
   const { t } = useLanguage();
   const { timings: backendTimings, loading, error } = useTempleTimings();
@@ -26,13 +30,13 @@ export default function Timings() {
           background: 'rgba(0, 0, 0, 0.5)'
         }}></div>
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'white' }}>⏰ {t('timings_title')}</h1>
-          <p style={{ color: '#f0f0f0' }}>{t('timings_daily')}</p>
+          <h1 style={{ color: 'white' }}>{t('timings_title')}</h1>
+          <p style={{ color: '#f7e8c8' }}>{t('timings_daily')}</p>
         </div>
       </div>
 
       <div className="container">
-        <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#8b4513' }}>{t('timings_daily')}</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#a3171c' }}>{t('timings_daily')}</h2>
         
         {loading && (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
@@ -47,27 +51,43 @@ export default function Timings() {
         )}
         
         <div className="table-container">
-          <table>
+          <table className="darshan-table">
             <thead>
               <tr>
                 <th>{t('timings_day')}</th>
-                <th>Opening Time</th>
-                <th>Closing Time</th>
-                <th>Special Notes</th>
+                <th>Darshan</th>
+                <th>Notes</th>
               </tr>
             </thead>
             <tbody>
-              {displayTimings.map((timing, idx) => (
-                <tr key={idx}>
-                  <td><strong>{timing.dayOfWeek}</strong></td>
-                  <td>{formatTime(timing.openingTime)}</td>
-                  <td>{formatTime(timing.closingTime)}</td>
-                  <td>{timing.specialNotes || '—'}</td>
-                </tr>
-              ))}
+              {WEEK.map((day) => {
+                const sessions = displayTimings.filter((t) => String(t.dayOfWeek).toLowerCase() === day.toLowerCase());
+                if (loading || displayTimings.length === 0) return null;
+                const isToday = day === templeToday();
+                return (
+                  <tr key={day} className={isToday ? 'is-today' : undefined}>
+                    <td className="day">{day}{isToday && <span className="visually-hidden"> (today)</span>}</td>
+                    <td>
+                      {sessions.length === 0
+                        ? 'Closed'
+                        : sessions.map((t) => (
+                            <div key={t.id} className="session">
+                              {formatTime(t.openingTime)} – {formatTime(t.closingTime)}
+                            </div>
+                          ))}
+                    </td>
+                    <td>
+                      {sessions.filter((t) => t.specialNotes).map((t) => (
+                        <div key={t.id} className="session">{t.specialNotes}</div>
+                      ))}
+                      {sessions.every((t) => !t.specialNotes) && '—'}
+                    </td>
+                  </tr>
+                );
+              })}
               {(!loading && displayTimings.length === 0) && (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: 'center', padding: '1rem' }}>
+                  <td colSpan="3" style={{ textAlign: 'center', padding: '1rem' }}>
                     {error ? 'Unable to load timings. Please try again later.' : 'No timing records available.'}
                   </td>
                 </tr>
@@ -77,13 +97,13 @@ export default function Timings() {
         </div>
 
         <div style={{ 
-          background: '#f0f0f0', 
+          background: '#f7e8c8', 
           padding: '2rem', 
           borderRadius: '8px', 
           marginTop: '3rem',
           textAlign: 'center'
         }}>
-          <h3 style={{ color: '#8b4513', marginBottom: '1rem' }}>📍 Location & Contact</h3>
+          <h3 style={{ color: '#a3171c', marginBottom: '1rem' }}>📍 Location & Contact</h3>
           <p><strong>Address:</strong> Near Old Market, Hasaparthy, Warangal</p>
           <p><strong>Phone:</strong> (555) 123-4567</p>
           <p><strong>Email:</strong> info@rajarajeshwara.com</p>

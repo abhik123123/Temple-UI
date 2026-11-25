@@ -201,7 +201,7 @@ export default function TimingsAdmin() {
 
   return (
     <div style={{ padding: '40px 20px', maxWidth: '1000px', margin: '0 auto', minHeight: '70vh' }}>
-      <h1 style={{ color: '#0B1C3F', marginBottom: '8px' }}>⏰ {t.timings}</h1>
+      <h1 style={{ color: '#4a0c0e', marginBottom: '8px' }}>{t.timings}</h1>
       <p style={{ color: '#666', marginBottom: '24px' }}>{t.weeklySchedule}</p>
 
       {error && (
@@ -221,7 +221,7 @@ export default function TimingsAdmin() {
         <div style={{ overflowX: 'auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ backgroundColor: '#0B1C3F', color: '#E6B325', textAlign: 'left' }}>
+              <tr style={{ backgroundColor: '#4a0c0e', color: '#c98e1b', textAlign: 'left' }}>
                 <th style={cell}>{t.day}</th>
                 <th style={cell}>{t.opening}</th>
                 <th style={cell}>{t.closing}</th>
@@ -258,7 +258,7 @@ export default function TimingsAdmin() {
                           value={form.specialNotes} onChange={(e) => changeRow(row.id, 'specialNotes', e.target.value)} />
                       </td>
                       <td style={{ ...cell, whiteSpace: 'nowrap' }}>
-                        <button type="button" style={button('#0B1C3F')} disabled={!isDirty(row) || busyId !== null}
+                        <button type="button" style={button('#4a0c0e')} disabled={!isDirty(row) || busyId !== null}
                           onClick={() => saveRow(row)}>
                           {busyId === row.id ? t.loading : t.save}
                         </button>
@@ -279,7 +279,7 @@ export default function TimingsAdmin() {
         </div>
       )}
 
-      <form onSubmit={addSession} style={{ marginTop: '24px', padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+      <form onSubmit={addSession} style={{ marginTop: '24px', padding: '16px', backgroundColor: '#fbf1dc', borderRadius: '8px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <label>
           <div style={{ fontWeight: 500, marginBottom: '4px' }}>{t.day}</div>
           <select style={input} value={newSession.dayOfWeek}

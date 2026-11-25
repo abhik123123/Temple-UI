@@ -41,13 +41,13 @@ export default function Services() {
           background: 'rgba(0, 0, 0, 0.5)'
         }}></div>
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'white' }}>🙏 {t('services_title')}</h1>
-          <p style={{ color: '#f0f0f0' }}>{t('services_description')}</p>
+          <h1 style={{ color: 'white' }}>{t('services_title')}</h1>
+          <p style={{ color: '#f7e8c8' }}>{t('services_description')}</p>
         </div>
       </div>
 
       <div className="container">
-        <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#8b4513' }}>{t('services_title')}</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#a3171c' }}>{t('services_title')}</h2>
 
         {loading && (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
@@ -64,16 +64,16 @@ export default function Services() {
         <div className="cards-grid">
           {displayServices.map(service => (
             <div key={service.id} className="card">
-              <div className="card-image" style={{ fontSize: '2.5rem', padding: '1rem', textAlign: 'center', background: 'linear-gradient(135deg, #d4a574 0%, #a0522d 100%)' }}>
+              <div className="card-image" style={{ fontSize: '2.5rem', padding: '1rem', textAlign: 'center', background: 'linear-gradient(135deg, #c98e1b 0%, #7e1015 100%)' }}>
                 {service.icon || '🙏'}
               </div>
               <div className="card-content">
                 <h3>{service.name}</h3>
-                <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#8b4513', marginBottom: '0.5rem' }}>{service.price}</p>
+                <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#a3171c', marginBottom: '0.5rem' }}>{service.price}</p>
                 <p>{service.description}</p>
-                <ul style={{ marginLeft: '1.5rem', marginBottom: '1rem' }}>
+                <ul className="check-list" style={{ marginBottom: '1rem' }}>
                   {getServiceDetails(service).map((feature, idx) => (
-                    <li key={idx} style={{ marginBottom: '0.5rem' }}>✓ {feature}</li>
+                    <li key={idx} style={{ marginBottom: '0.35rem' }}>{feature}</li>
                   ))}
                 </ul>
                 <button className="btn" style={{ width: '100%' }}>Book Service</button>

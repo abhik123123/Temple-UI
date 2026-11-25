@@ -1,92 +1,97 @@
-import React from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { Gopuram, Kaavi } from './Ornaments';
+import IndiaTime from './IndiaTime';
 
 export default function Navigation() {
   const { user, isAdmin, logout } = useAuth();
   const { language, changeLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isAdminPage = isAdmin && /(^|\/)admin(\/|$)/.test(location.pathname);
+
+  // Close the mobile menu after navigating.
+  useEffect(() => setMenuOpen(false), [location.pathname]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  const links = [
+    { to: isAdminPage ? '/home/admin' : '/home', label: t('nav_home') },
+    { to: isAdminPage ? '/events/admin' : '/events', label: t('nav_events') },
+    { to: isAdminPage ? '/services/admin' : '/services', label: t('nav_services') },
+    { to: isAdminPage ? '/timings/admin' : '/timings', label: t('nav_timings') },
+    { to: isAdminPage ? '/staff/admin' : '/staff', label: 'Priests & staff' },
+    { to: isAdminPage ? '/board-members/admin' : '/board-members', label: 'Trust board' },
+    { to: '/donors', label: 'Donations' },
+  ];
+  if (isAdmin && !isAdminPage) {
+    links.push({ to: '/home/admin', label: 'Admin' });
+  }
+  if (isAdmin) {
+    links.push({ to: '/subscriptions/admin', label: 'Newsletter' });
+  }
+
   return (
-    <nav>
-      <div className="nav-container">
-        <Link to={isAdminPage ? "/home/admin" : "/home"} className="logo">🏛️ Raja Rajeshwara</Link>
-        <ul>
-          <li><Link to={isAdminPage ? "/home/admin" : "/home"}>{t('nav_home')}</Link></li>
-          <li><Link to={isAdminPage ? "/events/admin" : "/events"}>{t('nav_events')}</Link></li>
-          <li><Link to={isAdminPage ? "/services/admin" : "/services"}>{t('nav_services')}</Link></li>
-          <li><Link to={isAdminPage ? "/staff/admin" : "/staff"}>🧑‍💼 Staff</Link></li>
-          <li><Link to={isAdminPage ? "/timings/admin" : "/timings"}>{t('nav_timings')}</Link></li>
-          <li><Link to={isAdminPage ? "/board-members/admin" : "/board-members"}>👥 Board</Link></li>
-          {isAdmin && !isAdminPage && <li><Link to="/events/admin">📅 Events Manager</Link></li>}
-          {isAdmin && !isAdminPage && <li><Link to="/subscriptions/admin">📧 Newsletter</Link></li>}
-          {isAdmin && !isAdminPage && <li><Link to="/home/admin">⚙️ Admin</Link></li>}
-        </ul>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {/* Language Selector */}
-          <select
-            aria-label="Language"
-            value={language}
-            onChange={(e) => changeLanguage(e.target.value)}
+    <header className="site-header">
+      <nav aria-label="Main">
+        <div className="nav-container">
+          <NavLink to={isAdminPage ? '/home/admin' : '/home'} className="logo">
+            <Gopuram />
+            <span>
+              Raja Rajeshwara
+              <small>Devastanam · Hasaparthy</small>
+            </span>
+          </NavLink>
+
+          <button
+            type="button"
+            className="nav-toggle btn-outline"
+            aria-expanded={menuOpen}
+            aria-controls="primary-menu"
+            onClick={() => setMenuOpen((open) => !open)}
             style={{
-              background: 'rgba(230, 179, 37, 0.15)',
-              color: '#E6B325',
-              border: '1px solid #E6B325',
-              padding: '0.5rem',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              fontWeight: '500'
+              font: 'inherit', fontSize: '0.9rem', padding: '0.35rem 0.75rem',
+              borderRadius: 6, border: '1px solid rgba(232,196,106,.55)',
+              background: 'transparent', color: '#e8c46a', cursor: 'pointer'
             }}
           >
-            <option value="en" style={{ color: '#333' }}>English</option>
-            <option value="te" style={{ color: '#333' }}>తెలుగు</option>
-            <option value="hi" style={{ color: '#333' }}>हिंदी</option>
-          </select>
+            {menuOpen ? 'Close' : 'Menu'}
+          </button>
 
-          {user && (
-            <>
-              <span style={{ color: '#E6B325', fontSize: '0.9rem', fontWeight: '500' }}>
-                👤 {user.name || user.email}
-              </span>
-              <button
-                type="button"
-                onClick={handleLogout}
-                style={{
-                  background: 'rgba(230, 179, 37, 0.15)',
-                  color: '#E6B325',
-                  border: '1px solid #E6B325',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#E6B325';
-                  e.target.style.color = '#0B1C3F';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(230, 179, 37, 0.15)';
-                  e.target.style.color = '#E6B325';
-                }}
-              >
+          <ul id="primary-menu" className={`nav-links${menuOpen ? ' is-open' : ''}`}>
+            {links.map((link) => (
+              <li key={link.to + link.label}>
+                <NavLink to={link.to} end className={({ isActive }) => (isActive ? 'active' : undefined)}>
+                  {link.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+
+          <div className="nav-tools">
+            <IndiaTime />
+            <label className="visually-hidden" htmlFor="language-select">Language</label>
+            <select id="language-select" value={language} onChange={(e) => changeLanguage(e.target.value)}>
+              <option value="en">English</option>
+              <option value="te">తెలుగు</option>
+              <option value="hi">हिंदी</option>
+            </select>
+            {user && (
+              <button type="button" onClick={handleLogout} title={`Signed in as ${user.name}`}>
                 {t('nav_logout')}
               </button>
-            </>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+      <Kaavi />
+    </header>
   );
 }

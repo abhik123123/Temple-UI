@@ -78,11 +78,10 @@ const SubscriptionAdmin = () => {
   };
 
   return (
-    <div style={{ padding: '2rem', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+    <div style={{ padding: '2rem', backgroundColor: '#fbf1dc', minHeight: '100vh' }}>
       {/* Header */}
       <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ color: '#0B1C3F', fontSize: '2rem', margin: '0 0 0.5rem 0' }}>
-          📧 Subscription Management
+        <h2 style={{ color: '#4a0c0e', fontSize: '2rem', margin: '0 0 0.5rem 0' }}>Subscription Management
         </h2>
         <p style={{ color: '#666', margin: '0' }}>Manage temple newsletter subscriptions</p>
       </div>
@@ -100,12 +99,12 @@ const SubscriptionAdmin = () => {
           padding: '1.5rem',
           borderRadius: '8px',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          borderLeft: '4px solid #E6B325'
+          borderLeft: '4px solid #c98e1b'
         }}>
           <div style={{ color: '#999', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
             Total Subscribers
           </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#E6B325' }}>
+          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#c98e1b' }}>
             {stats.totalSubscribers || 0}
           </div>
         </div>
@@ -116,12 +115,12 @@ const SubscriptionAdmin = () => {
           padding: '1.5rem',
           borderRadius: '8px',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          borderLeft: '4px solid #4caf50'
+          borderLeft: '4px solid #3d6b2c'
         }}>
           <div style={{ color: '#999', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
             Active Subscribers
           </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#4caf50' }}>
+          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#3d6b2c' }}>
             {stats.activeSubscribers || 0}
           </div>
         </div>
@@ -132,12 +131,12 @@ const SubscriptionAdmin = () => {
           padding: '1.5rem',
           borderRadius: '8px',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          borderLeft: '4px solid #ff9800'
+          borderLeft: '4px solid #c98e1b'
         }}>
           <div style={{ color: '#999', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
             Unsubscribed
           </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ff9800' }}>
+          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#c98e1b' }}>
             {stats.unsubscribed || 0}
           </div>
         </div>
@@ -151,7 +150,7 @@ const SubscriptionAdmin = () => {
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         marginBottom: '2rem'
       }}>
-        <h3 style={{ color: '#0B1C3F', margin: '0 0 1rem 0', fontSize: '1.3rem' }}>
+        <h3 style={{ color: '#4a0c0e', margin: '0 0 1rem 0', fontSize: '1.3rem' }}>
           ✉️ Send Test Email
         </h3>
         <form onSubmit={handleSendTestEmail} style={{ display: 'flex', gap: '0.5rem' }}>
@@ -175,16 +174,16 @@ const SubscriptionAdmin = () => {
             disabled={loading}
             style={{
               padding: '0.8rem 1.5rem',
-              backgroundColor: '#E6B325',
-              color: '#0B1C3F',
+              backgroundColor: '#c98e1b',
+              color: '#4a0c0e',
               border: 'none',
               borderRadius: '6px',
               fontWeight: 'bold',
               cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.7 : 1
             }}
-            onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#d4a820')}
-            onMouseLeave={(e) => !loading && (e.target.style.backgroundColor = '#E6B325')}
+            onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#e8c46a')}
+            onMouseLeave={(e) => !loading && (e.target.style.backgroundColor = '#c98e1b')}
           >
             {loading ? 'Sending...' : 'Send Test'}
           </button>
@@ -220,7 +219,7 @@ const SubscriptionAdmin = () => {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <h3 style={{ color: '#0B1C3F', margin: '0', fontSize: '1.3rem' }}>
+          <h3 style={{ color: '#4a0c0e', margin: '0', fontSize: '1.3rem' }}>
             📋 Subscribers ({subscribers.length})
           </h3>
           <button
@@ -228,15 +227,15 @@ const SubscriptionAdmin = () => {
             disabled={loading}
             style={{
               padding: '0.6rem 1.2rem',
-              backgroundColor: '#f0f0f0',
+              backgroundColor: '#f7e8c8',
               border: '1px solid #ddd',
               borderRadius: '6px',
               cursor: loading ? 'not-allowed' : 'pointer',
               fontWeight: '500',
               fontSize: '0.9rem'
             }}
-            onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#e0e0e0')}
-            onMouseLeave={(e) => !loading && (e.target.style.backgroundColor = '#f0f0f0')}
+            onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#efd8a8')}
+            onMouseLeave={(e) => !loading && (e.target.style.backgroundColor = '#f7e8c8')}
           >
             🔄 Refresh
           </button>
@@ -249,7 +248,7 @@ const SubscriptionAdmin = () => {
             borderCollapse: 'collapse'
           }}>
             <thead>
-              <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+              <tr style={{ backgroundColor: '#fbf1dc', borderBottom: '2px solid #ddd' }}>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 'bold', color: '#666' }}>
                   Email
                 </th>
@@ -270,10 +269,10 @@ const SubscriptionAdmin = () => {
                   key={subscriber.id || index}
                   style={{
                     borderBottom: '1px solid #eee',
-                    backgroundColor: index % 2 === 0 ? '#fff' : '#f9f9f9'
+                    backgroundColor: index % 2 === 0 ? '#fff' : '#fbf1dc'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#fff' : '#f9f9f9'}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f7e8c8'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#fff' : '#fbf1dc'}
                 >
                   <td style={{ padding: '1rem', color: '#333' }}>
                     {subscriber.email}
@@ -329,8 +328,8 @@ const SubscriptionAdmin = () => {
               disabled={currentPage === 0 || loading}
               style={{
                 padding: '0.6rem 1.2rem',
-                backgroundColor: currentPage === 0 ? '#f0f0f0' : '#E6B325',
-                color: currentPage === 0 ? '#ccc' : '#0B1C3F',
+                backgroundColor: currentPage === 0 ? '#f7e8c8' : '#c98e1b',
+                color: currentPage === 0 ? '#ccc' : '#4a0c0e',
                 border: 'none',
                 borderRadius: '6px',
                 cursor: currentPage === 0 || loading ? 'not-allowed' : 'pointer',
@@ -347,8 +346,8 @@ const SubscriptionAdmin = () => {
               disabled={subscribers.length < pageSize || loading}
               style={{
                 padding: '0.6rem 1.2rem',
-                backgroundColor: subscribers.length < pageSize ? '#f0f0f0' : '#E6B325',
-                color: subscribers.length < pageSize ? '#ccc' : '#0B1C3F',
+                backgroundColor: subscribers.length < pageSize ? '#f7e8c8' : '#c98e1b',
+                color: subscribers.length < pageSize ? '#ccc' : '#4a0c0e',
                 border: 'none',
                 borderRadius: '6px',
                 cursor: subscribers.length < pageSize || loading ? 'not-allowed' : 'pointer',

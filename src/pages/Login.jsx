@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { Gopuram } from '../components/Ornaments';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -33,28 +34,24 @@ export default function Login() {
   const isSubmitDisabled = loading || !username.trim() || !password;
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #8b4513 0%, #a0522d 100%)'
-      }}
-    >
+    <div className="login-shell">
       <div
         style={{
-          background: 'white',
-          padding: '2rem',
+          background: '#fffaf0',
+          padding: '2.25rem 2rem 2rem',
           borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          border: '2px solid #c98e1b',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
           maxWidth: '400px',
           width: '100%'
         }}
       >
-        <h1 style={{ textAlign: 'center', color: '#8b4513', marginBottom: '0.5rem' }}>🏛️ {t('home_title')}</h1>
-        <p style={{ textAlign: 'center', color: '#555', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-          Temple administrators only.
+        <div style={{ display: 'flex', justifyContent: 'center', color: '#c98e1b', marginBottom: '0.75rem' }}>
+          <Gopuram className="login-gopuram" />
+        </div>
+        <h1 style={{ textAlign: 'center', fontSize: '1.6rem', marginBottom: '0.25rem' }}>{t('home_title')}</h1>
+        <p style={{ textAlign: 'center', color: '#5b4636', margin: '0 auto 1.5rem', fontSize: '0.95rem' }}>
+          Sign in to manage the temple website.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -127,7 +124,7 @@ export default function Login() {
             style={{
               width: '100%',
               padding: '0.75rem',
-              background: '#8b4513',
+              background: '#a3171c',
               color: 'white',
               border: 'none',
               borderRadius: '4px',

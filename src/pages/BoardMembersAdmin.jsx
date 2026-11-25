@@ -211,7 +211,7 @@ export default function BoardMembersAdmin() {
         <a href="/board-members" style={{
           display: 'inline-block',
           padding: '10px 20px',
-          backgroundColor: '#0B1C3F',
+          backgroundColor: '#4a0c0e',
           color: 'white',
           textDecoration: 'none',
           borderRadius: '4px',
@@ -224,7 +224,7 @@ export default function BoardMembersAdmin() {
   }
 
   return (
-    <div style={{ padding: '40px 20px', minHeight: '70vh', backgroundColor: '#f9f9f9' }}>
+    <div style={{ padding: '40px 20px', minHeight: '70vh', backgroundColor: '#fbf1dc' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{
@@ -233,7 +233,7 @@ export default function BoardMembersAdmin() {
           alignItems: 'center',
           marginBottom: '30px'
         }}>
-          <h1 style={{ fontSize: '2rem', color: '#0B1C3F', margin: 0 }}>
+          <h1 style={{ fontSize: '2rem', color: '#4a0c0e', margin: 0 }}>
             {t.boardMembers} Management
           </h1>
           <button
@@ -243,7 +243,7 @@ export default function BoardMembersAdmin() {
             }}
             style={{
               padding: '12px 24px',
-              backgroundColor: '#0B1C3F',
+              backgroundColor: '#4a0c0e',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
@@ -280,7 +280,7 @@ export default function BoardMembersAdmin() {
             marginBottom: '30px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
           }}>
-            <h2 style={{ color: '#0B1C3F', marginBottom: '20px', marginTop: 0 }}>
+            <h2 style={{ color: '#4a0c0e', marginBottom: '20px', marginTop: 0 }}>
               {editingId ? t.editMember : t.addMember}
             </h2>
 
@@ -440,7 +440,6 @@ export default function BoardMembersAdmin() {
                     borderRadius: '4px',
                     fontSize: '14px',
                     boxSizing: 'border-box',
-                    fontFamily: 'inherit'
                   }}
                 />
               </div>
@@ -450,7 +449,7 @@ export default function BoardMembersAdmin() {
                   type="submit"
                   style={{
                     padding: '12px 24px',
-                    backgroundColor: '#0B1C3F',
+                    backgroundColor: '#4a0c0e',
                     color: 'white',
                     border: 'none',
                     borderRadius: '4px',
@@ -468,7 +467,7 @@ export default function BoardMembersAdmin() {
                   onClick={resetForm}
                   style={{
                     padding: '12px 24px',
-                    backgroundColor: '#f5f5f5',
+                    backgroundColor: '#fbf1dc',
                     color: '#333',
                     border: '1px solid #ddd',
                     borderRadius: '4px',
@@ -476,8 +475,8 @@ export default function BoardMembersAdmin() {
                     fontWeight: '500',
                     transition: 'all 0.3s ease'
                   }}
-                  onMouseEnter={e => e.target.style.backgroundColor = '#e8e8e8'}
-                  onMouseLeave={e => e.target.style.backgroundColor = '#f5f5f5'}
+                  onMouseEnter={e => e.target.style.backgroundColor = '#efd8a8'}
+                  onMouseLeave={e => e.target.style.backgroundColor = '#fbf1dc'}
                 >
                   {t.cancel}
                 </button>
@@ -515,7 +514,7 @@ export default function BoardMembersAdmin() {
               >
                 <div style={{
                   padding: '20px',
-                  background: 'linear-gradient(135deg, #0B1C3F 0%, #112A57 100%)',
+                  background: 'linear-gradient(135deg, #4a0c0e 0%, #7e1015 100%)',
                   color: 'white'
                 }}>
                   <h3 style={{ margin: '0 0 5px 0' }}>{member.fullName}</h3>
@@ -547,7 +546,7 @@ export default function BoardMembersAdmin() {
                       style={{
                         flex: 1,
                         padding: '10px',
-                        backgroundColor: '#E6B325',
+                        backgroundColor: '#c98e1b',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
@@ -609,7 +608,7 @@ export default function BoardMembersAdmin() {
               width: '90%',
               textAlign: 'center'
             }}>
-              <h3 style={{ color: '#0B1C3F', marginBottom: '15px', marginTop: 0 }}>
+              <h3 style={{ color: '#4a0c0e', marginBottom: '15px', marginTop: 0 }}>
                 {t.deleteMember}
               </h3>
               <p style={{ color: '#666', marginBottom: '25px' }}>
@@ -637,7 +636,7 @@ export default function BoardMembersAdmin() {
                   onClick={() => setShowDeleteConfirm(null)}
                   style={{
                     padding: '10px 20px',
-                    backgroundColor: '#f5f5f5',
+                    backgroundColor: '#fbf1dc',
                     color: '#333',
                     border: '1px solid #ddd',
                     borderRadius: '4px',
@@ -645,8 +644,8 @@ export default function BoardMembersAdmin() {
                     fontWeight: '500',
                     transition: 'all 0.3s ease'
                   }}
-                  onMouseEnter={e => e.target.style.backgroundColor = '#e8e8e8'}
-                  onMouseLeave={e => e.target.style.backgroundColor = '#f5f5f5'}
+                  onMouseEnter={e => e.target.style.backgroundColor = '#efd8a8'}
+                  onMouseLeave={e => e.target.style.backgroundColor = '#fbf1dc'}
                 >
                   {t.cancel}
                 </button>

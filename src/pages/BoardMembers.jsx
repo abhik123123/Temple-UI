@@ -57,14 +57,14 @@ export default function BoardMembers() {
           background: 'rgba(0, 0, 0, 0.5)'
         }}></div>
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'white', fontSize: '2.5rem' }}>👥 Board Members</h1>
-          <p style={{ color: '#f0f0f0', fontSize: '1.1rem' }}>Meet our temple leadership team</p>
+          <h1 style={{ color: 'white', fontSize: '2.5rem' }}>Trust Board</h1>
+          <p style={{ color: '#f7e8c8', fontSize: '1.1rem' }}>Meet our temple leadership team</p>
         </div>
       </div>
 
       <div className="container">
         <div style={{ marginBottom: '2rem' }}>
-          <h2 style={{ color: '#8b4513', textAlign: 'center', marginBottom: '1.5rem' }}>Temple Management Board</h2>
+          <h2 style={{ color: '#a3171c', textAlign: 'center', marginBottom: '1.5rem' }}>Temple Management Board</h2>
           
           {/* Department Filter */}
           <div style={{
@@ -82,7 +82,7 @@ export default function BoardMembers() {
                 style={{
                   padding: '0.5rem 1rem',
                   border: 'none',
-                  background: filterDept === dept ? '#8b4513' : '#f0f0f0',
+                  background: filterDept === dept ? '#a3171c' : '#f7e8c8',
                   color: filterDept === dept ? 'white' : '#333',
                   borderRadius: '20px',
                   cursor: loading || !boardMembers.length ? 'not-allowed' : 'pointer',
@@ -144,7 +144,7 @@ export default function BoardMembers() {
                 {/* Member Image */}
                 <div style={{
                   height: '220px',
-                  background: 'linear-gradient(135deg, #8b4513 0%, #a0522d 100%)',
+                  background: 'linear-gradient(135deg, #a3171c 0%, #7e1015 100%)',
                   overflow: 'hidden',
                   display: 'flex',
                   alignItems: 'center',
@@ -160,7 +160,7 @@ export default function BoardMembers() {
                     }}
                     onError={(e) => {
                       e.target.style.display = 'none';
-                      e.target.parentElement.style.background = 'linear-gradient(135deg, #8b4513 0%, #a0522d 100%)';
+                      e.target.parentElement.style.background = 'linear-gradient(135deg, #a3171c 0%, #7e1015 100%)';
                       e.target.parentElement.innerHTML = '👤';
                       e.target.parentElement.style.fontSize = '3rem';
                       e.target.parentElement.style.color = 'white';
@@ -170,12 +170,12 @@ export default function BoardMembers() {
 
                 {/* Member Info */}
                 <div style={{ padding: '1.5rem' }}>
-                  <h3 style={{ color: '#8b4513', margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>
+                  <h3 style={{ color: '#a3171c', margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>
                     {member.fullName}
                   </h3>
                   
                   <p style={{
-                    color: '#d4a574',
+                    color: '#c98e1b',
                     fontWeight: 'bold',
                     margin: '0.25rem 0',
                     fontSize: '0.95rem'
@@ -191,14 +191,14 @@ export default function BoardMembers() {
                     {member.department}
                   </p>
 
-                  <div style={{ borderTop: '1px solid #eee', paddingTop: '1rem' }}>
+                  <div style={{ borderTop: '1px solid rgba(201,142,27,.35)', paddingTop: '1rem' }}>
                     <p style={{ margin: '0.25rem 0', fontSize: '0.85rem', color: '#666' }}>
-                      📞 <a href={`tel:${member.phoneNumber}`} style={{ color: '#8b4513', textDecoration: 'none' }}>
+                      📞 <a href={`tel:${member.phoneNumber}`} style={{ color: '#a3171c', textDecoration: 'none' }}>
                         {member.phoneNumber}
                       </a>
                     </p>
                     <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: '#666' }}>
-                      ✉️ <a href={`mailto:${member.email}`} style={{ color: '#8b4513', textDecoration: 'none' }}>
+                      ✉️ <a href={`mailto:${member.email}`} style={{ color: '#a3171c', textDecoration: 'none' }}>
                         {member.email}
                       </a>
                     </p>
@@ -251,7 +251,7 @@ export default function BoardMembers() {
           >
             {/* Modal Header */}
             <div style={{
-              background: 'linear-gradient(135deg, #8b4513 0%, #a0522d 100%)',
+              background: 'linear-gradient(135deg, #a3171c 0%, #7e1015 100%)',
               padding: '2rem',
               color: 'white',
               display: 'flex',
@@ -293,7 +293,7 @@ export default function BoardMembers() {
               />
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ color: '#8b4513', marginTop: 0 }}>Position & Department</h3>
+                <h3 style={{ color: '#a3171c', marginTop: 0 }}>Position & Department</h3>
                 <p style={{ margin: '0.25rem 0', color: '#333' }}>
                   <strong>Position:</strong> {selectedMember.position}
                 </p>
@@ -303,21 +303,21 @@ export default function BoardMembers() {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ color: '#8b4513', marginTop: 0 }}>Contact Information</h3>
+                <h3 style={{ color: '#a3171c', marginTop: 0 }}>Contact Information</h3>
                 <p style={{ margin: '0.25rem 0', color: '#333' }}>
-                  📞 <a href={`tel:${selectedMember.phoneNumber}`} style={{ color: '#8b4513', textDecoration: 'none' }}>
+                  📞 <a href={`tel:${selectedMember.phoneNumber}`} style={{ color: '#a3171c', textDecoration: 'none' }}>
                     {selectedMember.phoneNumber}
                   </a>
                 </p>
                 <p style={{ margin: '0.25rem 0', color: '#333' }}>
-                  ✉️ <a href={`mailto:${selectedMember.email}`} style={{ color: '#8b4513', textDecoration: 'none' }}>
+                  ✉️ <a href={`mailto:${selectedMember.email}`} style={{ color: '#a3171c', textDecoration: 'none' }}>
                     {selectedMember.email}
                   </a>
                 </p>
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ color: '#8b4513', marginTop: 0 }}>Biography</h3>
+                <h3 style={{ color: '#a3171c', marginTop: 0 }}>Biography</h3>
                 <p style={{ color: '#666', lineHeight: '1.6' }}>
                   {selectedMember.biography}
                 </p>
@@ -328,7 +328,7 @@ export default function BoardMembers() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  background: '#8b4513',
+                  background: '#a3171c',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',

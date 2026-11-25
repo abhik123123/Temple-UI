@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { eventsAPI } from '../services/api';
 import { resolveAssetUrl } from '../services/httpClient';
-import { formatDate, formatTime } from '../utils/format';
+import { formatDate, formatTime, parseLocalDate } from '../utils/format';
 import EventRegistrationModal from '../components/EventRegistrationModal';
 
 const translations = {
@@ -110,13 +110,13 @@ export default function EventsUser() {
   }
 
   return (
-    <div style={{ padding: '40px 20px', minHeight: '70vh', backgroundColor: '#f9f9f9' }}>
+    <div style={{ padding: '40px 20px', minHeight: '70vh', backgroundColor: '#fbf1dc' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '40px', textAlign: 'center' }}>
           <h1 style={{
             fontSize: '2.5rem',
-            color: '#0B1C3F',
+            color: '#4a0c0e',
             marginBottom: '10px',
             fontWeight: 'bold'
           }}>
@@ -125,7 +125,7 @@ export default function EventsUser() {
           <div style={{
             height: '4px',
             width: '60px',
-            backgroundColor: '#E6B325',
+            backgroundColor: '#c98e1b',
             margin: '0 auto'
           }}></div>
         </div>
@@ -158,131 +158,42 @@ export default function EventsUser() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
             gap: '25px'
           }}>
-            {events.map(event => (
-              <div
-                key={event.id}
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                }}
-              >
-                {/* Event Header */}
-                <div style={{
-                  padding: '20px',
-                  backgroundColor: 'linear-gradient(135deg, #0B1C3F 0%, #112A57 100%)',
-                  color: 'white'
-                }}>
-                  <h3 style={{ margin: '0 0 10px 0', fontSize: '1.3rem' }}>
-                    {event.title}
-                  </h3>
-                  <div style={{ fontSize: '12px', opacity: 0.9 }}>
-                    {event.category || 'Event'}
-                  </div>
-                </div>
-
-                {/* Event Details */}
-                <div style={{ padding: '20px' }}>
-                  {/* Date */}
-                  <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
-                    <span style={{ color: '#E6B325', marginRight: '10px', fontSize: '14px' }}>📅</span>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#999' }}>{t.date}</div>
-                      <div style={{ fontSize: '14px', color: '#333', fontWeight: '500' }}>
-                        {formatDate(event.eventDate)}
+            {events.map(event => {
+              const d = parseLocalDate(event.eventDate);
+              const registered = registeredEvents.has(event.id);
+              return (
+                <article key={event.id} className="event-card">
+                  <div className={`event-card__media${event.imageUrl ? ' has-photo' : ''}`} style={event.imageUrl ? { backgroundImage: `url(${event.imageUrl})` } : undefined}>
+                    {d && (
+                      <div className="event-card__date" aria-hidden="true">
+                        <span>{d.toLocaleDateString('en-US', { month: 'short' })}</span>
+                        <strong>{d.getDate()}</strong>
+                        <span>{d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
                       </div>
+                    )}
+                  </div>
+                  <div className="event-card__body">
+                    {event.category && <p className="event-card__category">{event.category}</p>}
+                    <h3>{event.title}</h3>
+                    <p className="event-card__meta">
+                      {formatDate(event.eventDate)}
+                      {event.startTime && <> · {formatTime(event.startTime)}{event.endTime && `–${formatTime(event.endTime)}`}</>}
+                      <br />
+                      {event.location || 'Temple'}
+                    </p>
+                    {event.description && <p className="event-card__desc">{event.description}</p>}
+                    <div className="event-card__actions">
+                      <button type="button" className="btn btn-quiet" onClick={() => handleViewDetails(event)}>
+                        {t.viewDetails}
+                      </button>
+                      <button type="button" className="btn" disabled={registered} onClick={() => handleRegister(event)}>
+                        {registered ? t.registered : t.register}
+                      </button>
                     </div>
                   </div>
-
-                  {/* Time */}
-                  <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
-                    <span style={{ color: '#E6B325', marginRight: '10px', fontSize: '14px' }}>🕐</span>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#999' }}>{t.time}</div>
-                      <div style={{ fontSize: '14px', color: '#333', fontWeight: '500' }}>
-                        {formatTime(event.startTime)}
-                        {event.endTime && ` - ${formatTime(event.endTime)}`}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div style={{ marginBottom: '15px', display: 'flex', alignItems: 'center' }}>
-                    <span style={{ color: '#E6B325', marginRight: '10px', fontSize: '14px' }}>📍</span>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#999' }}>{t.location}</div>
-                      <div style={{ fontSize: '14px', color: '#333', fontWeight: '500' }}>
-                        {event.location || 'Temple'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '10px',
-                    marginTop: '20px'
-                  }}>
-                    <button
-                      onClick={() => handleViewDetails(event)}
-                      style={{
-                        padding: '10px',
-                        backgroundColor: '#f5f5f5',
-                        color: '#0B1C3F',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        fontWeight: '500',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={e => {
-                        e.target.style.backgroundColor = '#e8e8e8';
-                      }}
-                      onMouseLeave={e => {
-                        e.target.style.backgroundColor = '#f5f5f5';
-                      }}
-                    >
-                      {t.viewDetails}
-                    </button>
-                    <button
-                      onClick={() => handleRegister(event)}
-                      style={{
-                        padding: '10px',
-                        backgroundColor: registeredEvents.has(event.id) ? '#E6B325' : '#0B1C3F',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        fontWeight: '500',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={e => {
-                        e.target.style.opacity = '0.9';
-                      }}
-                      onMouseLeave={e => {
-                        e.target.style.opacity = '1';
-                      }}
-                    >
-                      {registeredEvents.has(event.id) ? t.registered : t.register}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
 
@@ -309,12 +220,12 @@ export default function EventsUser() {
               maxHeight: '90vh',
               overflowY: 'auto'
             }}>
-              <h2 style={{ color: '#0B1C3F', marginBottom: '20px' }}>
+              <h2 style={{ color: '#4a0c0e', marginBottom: '20px' }}>
                 {selectedEvent.title}
               </h2>
 
               <div style={{ marginBottom: '20px', lineHeight: '1.6', color: '#666' }}>
-                <h4 style={{ color: '#0B1C3F', marginBottom: '10px' }}>{t.description}</h4>
+                <h4 style={{ color: '#4a0c0e', marginBottom: '10px' }}>{t.description}</h4>
                 <p>{selectedEvent.description || 'No description available'}</p>
               </div>
 
@@ -324,7 +235,7 @@ export default function EventsUser() {
                 gap: '15px',
                 marginBottom: '20px',
                 padding: '15px',
-                backgroundColor: '#f9f9f9',
+                backgroundColor: '#fbf1dc',
                 borderRadius: '4px'
               }}>
                 <div>
@@ -360,7 +271,7 @@ export default function EventsUser() {
                   style={{
                     flex: 1,
                     padding: '12px',
-                    backgroundColor: registeredEvents.has(selectedEvent.id) ? '#E6B325' : '#0B1C3F',
+                    backgroundColor: registeredEvents.has(selectedEvent.id) ? '#c98e1b' : '#4a0c0e',
                     color: 'white',
                     border: 'none',
                     borderRadius: '4px',
@@ -379,7 +290,7 @@ export default function EventsUser() {
                   style={{
                     flex: 1,
                     padding: '12px',
-                    backgroundColor: '#f5f5f5',
+                    backgroundColor: '#fbf1dc',
                     color: '#333',
                     border: '1px solid #ddd',
                     borderRadius: '4px',
@@ -388,8 +299,8 @@ export default function EventsUser() {
                     fontWeight: '500',
                     transition: 'all 0.3s ease'
                   }}
-                  onMouseEnter={e => e.target.style.backgroundColor = '#e8e8e8'}
-                  onMouseLeave={e => e.target.style.backgroundColor = '#f5f5f5'}
+                  onMouseEnter={e => e.target.style.backgroundColor = '#efd8a8'}
+                  onMouseLeave={e => e.target.style.backgroundColor = '#fbf1dc'}
                 >
                   Close
                 </button>

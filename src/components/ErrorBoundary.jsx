@@ -35,7 +35,7 @@ export default class ErrorBoundary extends React.Component {
 
     return (
       <div role="alert" style={{ padding: '4rem 1.5rem', textAlign: 'center', minHeight: '50vh' }}>
-        <h2 style={{ color: '#8b4513', marginBottom: '1rem' }}>
+        <h2 style={{ color: '#a3171c', marginBottom: '1rem' }}>
           {chunkFailed ? 'A new version of the site is available' : 'Something went wrong'}
         </h2>
         <p style={{ color: '#555', marginBottom: '1.5rem' }}>

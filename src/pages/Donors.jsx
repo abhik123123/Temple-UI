@@ -115,14 +115,14 @@ export default function Donors() {
           background: 'rgba(0, 0, 0, 0.5)'
         }}></div>
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'white' }}>💝 {t('donors_title') || 'Donors'}</h1>
-          <p style={{ color: '#f0f0f0' }}>{t('donors_subtitle') || 'Support Our Temple'}</p>
+          <h1 style={{ color: 'white' }}>{t('donors_title') || 'Donors'}</h1>
+          <p style={{ color: '#f7e8c8' }}>{t('donors_subtitle') || 'Support Our Temple'}</p>
         </div>
       </div>
 
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h2 style={{ textAlign: 'center', flex: 1, color: '#8b4513' }}>💝 Donations</h2>
+          <h2 style={{ textAlign: 'center', flex: 1, color: '#a3171c' }}>Donations</h2>
           {isAuthenticated && (
             <button 
               className="btn" 
@@ -142,13 +142,13 @@ export default function Donors() {
 
         {showAddForm && isAuthenticated && (
           <div style={{
-            background: '#f9f9f9',
+            background: '#fbf1dc',
             padding: '2rem',
             borderRadius: '8px',
             marginBottom: '2rem',
             border: '1px solid #ddd'
           }}>
-            <h3 style={{ color: '#8b4513', marginBottom: '1.5rem' }}>Record New Donation</h3>
+            <h3 style={{ color: '#a3171c', marginBottom: '1.5rem' }}>Record New Donation</h3>
             {submitError && (
               <div style={{ background: '#ffe5e5', padding: '1rem', borderRadius: '4px', color: '#d32f2f', marginBottom: '1rem' }}>
                 ⚠️ {submitError}
@@ -220,7 +220,6 @@ export default function Donors() {
                     padding: '0.75rem', 
                     borderRadius: '4px', 
                     border: '1px solid #ddd',
-                    fontFamily: 'inherit'
                   }}
                 />
               </div>
@@ -238,12 +237,12 @@ export default function Donors() {
 
         {/* Filters */}
         <div style={{
-          background: '#f5f5f5',
+          background: '#fbf1dc',
           padding: '1.5rem',
           borderRadius: '8px',
           marginBottom: '2rem'
         }}>
-          <h3 style={{ color: '#8b4513', marginBottom: '1rem' }}>🔍 Filter Donations</h3>
+          <h3 style={{ color: '#a3171c', marginBottom: '1rem' }}>🔍 Filter Donations</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
             <select
               value={filterYear}
@@ -285,7 +284,7 @@ export default function Donors() {
                 padding: '0.75rem',
                 borderRadius: '4px',
                 border: '1px solid #ddd',
-                background: '#e0e0e0',
+                background: '#efd8a8',
                 cursor: 'pointer'
               }}
             >
@@ -302,34 +301,34 @@ export default function Donors() {
           marginBottom: '2rem'
         }}>
           <div style={{
-            background: '#e8f5e9',
+            background: '#f7e8c8',
             padding: '1.5rem',
             borderRadius: '8px',
             textAlign: 'center',
-            border: '1px solid #4caf50'
+            border: '1px solid #3d6b2c'
           }}>
-            <h4 style={{ color: '#4caf50', margin: '0 0 0.5rem 0' }}>Total Donations</h4>
-            <p style={{ fontSize: '1.5rem', color: '#2e7d32', margin: 0 }}>₹{totalDonations.toFixed(2)}</p>
+            <h4 style={{ color: '#3d6b2c', margin: '0 0 0.5rem 0' }}>Total Donations</h4>
+            <p style={{ fontSize: '1.5rem', color: '#3d6b2c', margin: 0 }}>₹{totalDonations.toFixed(2)}</p>
           </div>
           <div style={{
-            background: '#e3f2fd',
+            background: '#fbf1dc',
             padding: '1.5rem',
             borderRadius: '8px',
             textAlign: 'center',
-            border: '1px solid #2196f3'
+            border: '1px solid #1e3a5c'
           }}>
-            <h4 style={{ color: '#2196f3', margin: '0 0 0.5rem 0' }}>Average Donation</h4>
-            <p style={{ fontSize: '1.5rem', color: '#1565c0', margin: 0 }}>₹{averageDonation}</p>
+            <h4 style={{ color: '#1e3a5c', margin: '0 0 0.5rem 0' }}>Average Donation</h4>
+            <p style={{ fontSize: '1.5rem', color: '#4a0c0e', margin: 0 }}>₹{averageDonation}</p>
           </div>
           <div style={{
-            background: '#fff3e0',
+            background: '#fbf1dc',
             padding: '1.5rem',
             borderRadius: '8px',
             textAlign: 'center',
-            border: '1px solid #ff9800'
+            border: '1px solid #c98e1b'
           }}>
-            <h4 style={{ color: '#ff9800', margin: '0 0 0.5rem 0' }}>Total Donors</h4>
-            <p style={{ fontSize: '1.5rem', color: '#e65100', margin: 0 }}>{filteredDonors.length}</p>
+            <h4 style={{ color: '#c98e1b', margin: '0 0 0.5rem 0' }}>Total Donors</h4>
+            <p style={{ fontSize: '1.5rem', color: '#a3171c', margin: 0 }}>{filteredDonors.length}</p>
           </div>
         </div>
 
@@ -355,7 +354,7 @@ export default function Donors() {
             overflow: 'hidden'
           }}>
             <thead>
-              <tr style={{ background: '#8b4513', color: 'white' }}>
+              <tr style={{ background: '#a3171c', color: 'white' }}>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 'bold' }}>Donor Name</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 'bold' }}>Date</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 'bold' }}>Type</th>
@@ -375,14 +374,14 @@ export default function Donors() {
                     <span style={{
                       display: 'inline-block',
                       padding: '0.25rem 0.75rem',
-                      background: '#f0f0f0',
+                      background: '#f7e8c8',
                       borderRadius: '12px',
                       fontSize: '0.85rem'
                     }}>
                       {donor.donationType}
                     </span>
                   </td>
-                  <td style={{ padding: '1rem', textAlign: 'right', color: '#4caf50', fontWeight: 'bold' }}>
+                  <td style={{ padding: '1rem', textAlign: 'right', color: '#3d6b2c', fontWeight: 'bold' }}>
                     ₹{parseFloat(donor.amount).toFixed(2)}
                   </td>
                   <td style={{ padding: '1rem', color: '#999' }}>

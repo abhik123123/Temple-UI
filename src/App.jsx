@@ -4,7 +4,6 @@ import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
-import IndiaTime from './components/IndiaTime';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import UserHome from './pages/UserHome';
@@ -82,7 +81,6 @@ export default function App() {
       <BrowserRouter future={ROUTER_FUTURE}>
         <LanguageProvider>
           <AuthProvider>
-            <IndiaTime />
             <AppRoutes />
           </AuthProvider>
         </LanguageProvider>

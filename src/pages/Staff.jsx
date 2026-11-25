@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { staffAPI } from '../services/api';
 import { resolveAssetUrl } from '../services/httpClient';
 
+const initials = (name = '') =>
+  name.replace(/^(Sri|Smt|Dr|Priest)\.?\s+/i, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+
 const departments = ['All', 'Religious', 'Operations', 'Community', 'Finance', 'Administration'];
 
 export default function Staff() {
@@ -48,8 +51,8 @@ export default function Staff() {
       }}>
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'white', fontSize: '2.2rem' }}>🧑‍💼 Staff Members</h1>
-          <p style={{ color: '#f0f0f0' }}>All temple personnel, grouped by department</p>
+          <h1 style={{ color: 'white', fontSize: '2.2rem' }}>Priests and Staff</h1>
+          <p style={{ color: '#f7e8c8' }}>All temple personnel, grouped by department</p>
         </div>
       </div>
 
@@ -64,7 +67,7 @@ export default function Staff() {
                 padding: '0.5rem 1rem',
                 borderRadius: '20px',
                 border: 'none',
-                background: department === dept ? '#8b4513' : '#f0f0f0',
+                background: department === dept ? '#a3171c' : '#f7e8c8',
                 color: department === dept ? '#fff' : '#333',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 fontWeight: 'bold'
@@ -107,19 +110,19 @@ export default function Staff() {
                    boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
                    cursor: 'pointer'
                  }}>
-              <div style={{ height: 200, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ height: 200, background: '#4a0c0e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {member.profileImageUrl
                   ? <img src={resolveAssetUrl(member.profileImageUrl)} alt={member.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                  : <span style={{ fontSize: '2rem' }}>👤</span>
+                  : <span className="initials" aria-hidden="true">{initials(member.fullName)}</span>
                 }
               </div>
               <div style={{ padding: '1rem' }}>
-                <h3 style={{ margin: 0, color: '#8b4513' }}>{member.fullName}</h3>
-                <p style={{ margin: '0.25rem 0', color: '#d4a574', fontWeight: 'bold' }}>{member.position}</p>
+                <h3 style={{ margin: 0, color: '#a3171c' }}>{member.fullName}</h3>
+                <p style={{ margin: '0.25rem 0', color: '#c98e1b', fontWeight: 'bold' }}>{member.position}</p>
                 <p style={{ margin: 0, color: '#777' }}>{member.department}</p>
-                <div style={{ borderTop: '1px solid #eee', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
-                  <p style={{ margin: '0.25rem 0', fontSize: 14 }}>📞 <a href={`tel:${member.phoneNumber}`} style={{ color: '#8b4513', textDecoration: 'none' }}>{member.phoneNumber}</a></p>
-                  <p style={{ margin: 0, fontSize: 14 }}>✉️ <a href={`mailto:${member.email}`} style={{ color: '#8b4513', textDecoration: 'none' }}>{member.email}</a></p>
+                <div style={{ borderTop: '1px solid rgba(201,142,27,.35)', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
+                  <p style={{ margin: '0.25rem 0', fontSize: 14 }}>📞 <a href={`tel:${member.phoneNumber}`} style={{ color: '#a3171c', textDecoration: 'none' }}>{member.phoneNumber}</a></p>
+                  <p style={{ margin: 0, fontSize: 14 }}>✉️ <a href={`mailto:${member.email}`} style={{ color: '#a3171c', textDecoration: 'none' }}>{member.email}</a></p>
                 </div>
               </div>
             </div>
@@ -131,7 +134,7 @@ export default function Staff() {
         <div onClick={() => setSelected(null)}
              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: 'white', borderRadius: 8, width: '90%', maxWidth: 600, overflow: 'hidden' }}>
-            <div style={{ background: 'linear-gradient(135deg, #8b4513, #a0522d)', padding: '1rem 1.25rem', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ background: 'linear-gradient(135deg, #a3171c, #7e1015)', padding: '1rem 1.25rem', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h2 style={{ margin: 0 }}>{selected.fullName}</h2>
               <button onClick={() => setSelected(null)} style={{ background: 'transparent', border: 'none', color: 'white', fontSize: 22, cursor: 'pointer' }}>✕</button>
             </div>

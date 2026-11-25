@@ -1,5 +1,7 @@
 export const translations = {
   en: {
+    donors_title: 'Donations',
+    donors_subtitle: 'Every offering keeps the lamps lit and feeds visitors at the Bhojanashala.',
     // Navigation
     nav_home: 'Home',
     nav_events: 'Events',
@@ -92,6 +94,8 @@ export const translations = {
   },
   
   te: {
+    donors_title: 'విరాళాలు',
+    donors_subtitle: 'మీ ప్రతి విరాళం దీపాలను వెలిగిస్తుంది, భోజనశాలలో భక్తులకు అన్నం పెడుతుంది.',
     // Navigation
     nav_home: 'హోమ్',
     nav_events: 'ఈవెంట్‌లు',
@@ -184,6 +188,8 @@ export const translations = {
   },
   
   hi: {
+    donors_title: 'दान',
+    donors_subtitle: 'आपका हर दान दीप जलाए रखता है और भोजनशाला में भक्तों को भोजन कराता है।',
     // Navigation
     nav_home: 'होम',
     nav_events: 'कार्यक्रम',

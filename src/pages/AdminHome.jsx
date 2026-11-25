@@ -72,7 +72,7 @@ export default function AdminHome() {
             Admin Portal
           </h1>
           <p style={{ 
-            color: '#e0e0e0', 
+            color: '#efd8a8', 
             fontSize: '1rem',
             lineHeight: '1.8',
             marginBottom: '2rem'
@@ -111,7 +111,7 @@ export default function AdminHome() {
       }}>
         <h2 style={{
           textAlign: 'center',
-          color: '#2c3e50',
+          color: '#4a0c0e',
           marginBottom: '2rem',
           fontSize: '2rem'
         }}>
@@ -127,7 +127,7 @@ export default function AdminHome() {
           {/* Events Admin */}
           <div style={{
             background: 'white',
-            border: '1px solid #ecf0f1',
+            border: '1px solid #f7e8c8',
             borderRadius: '8px',
             padding: '2rem',
             textAlign: 'center',
@@ -146,14 +146,14 @@ export default function AdminHome() {
           onClick={() => navigate('/events/admin')}
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📅</div>
-            <h3 style={{ color: '#2c3e50', marginBottom: '0.5rem' }}>Events</h3>
-            <p style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Manage temple events and schedules</p>
+            <h3 style={{ color: '#4a0c0e', marginBottom: '0.5rem' }}>Events</h3>
+            <p style={{ color: '#5b4636', fontSize: '0.9rem' }}>Manage temple events and schedules</p>
           </div>
 
           {/* Services Admin */}
           <div style={{
             background: 'white',
-            border: '1px solid #ecf0f1',
+            border: '1px solid #f7e8c8',
             borderRadius: '8px',
             padding: '2rem',
             textAlign: 'center',
@@ -172,14 +172,14 @@ export default function AdminHome() {
           onClick={() => navigate('/services/admin')}
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🙏</div>
-            <h3 style={{ color: '#2c3e50', marginBottom: '0.5rem' }}>Services</h3>
-            <p style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Manage temple services and offerings</p>
+            <h3 style={{ color: '#4a0c0e', marginBottom: '0.5rem' }}>Services</h3>
+            <p style={{ color: '#5b4636', fontSize: '0.9rem' }}>Manage temple services and offerings</p>
           </div>
 
           {/* Staff Admin */}
           <div style={{
             background: 'white',
-            border: '1px solid #ecf0f1',
+            border: '1px solid #f7e8c8',
             borderRadius: '8px',
             padding: '2rem',
             textAlign: 'center',
@@ -198,14 +198,14 @@ export default function AdminHome() {
           onClick={() => navigate('/staff/admin')}
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👥</div>
-            <h3 style={{ color: '#2c3e50', marginBottom: '0.5rem' }}>Staff</h3>
-            <p style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Manage staff members and roles</p>
+            <h3 style={{ color: '#4a0c0e', marginBottom: '0.5rem' }}>Staff</h3>
+            <p style={{ color: '#5b4636', fontSize: '0.9rem' }}>Manage staff members and roles</p>
           </div>
 
           {/* Timings Admin */}
           <div style={{
             background: 'white',
-            border: '1px solid #ecf0f1',
+            border: '1px solid #f7e8c8',
             borderRadius: '8px',
             padding: '2rem',
             textAlign: 'center',
@@ -224,14 +224,14 @@ export default function AdminHome() {
           onClick={() => navigate('/timings/admin')}
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏰</div>
-            <h3 style={{ color: '#2c3e50', marginBottom: '0.5rem' }}>Timings</h3>
-            <p style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Manage temple opening hours</p>
+            <h3 style={{ color: '#4a0c0e', marginBottom: '0.5rem' }}>Timings</h3>
+            <p style={{ color: '#5b4636', fontSize: '0.9rem' }}>Manage temple opening hours</p>
           </div>
 
           {/* Board Members Admin */}
           <div style={{
             background: 'white',
-            border: '1px solid #ecf0f1',
+            border: '1px solid #f7e8c8',
             borderRadius: '8px',
             padding: '2rem',
             textAlign: 'center',
@@ -250,14 +250,14 @@ export default function AdminHome() {
           onClick={() => navigate('/board-members/admin')}
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎖️</div>
-            <h3 style={{ color: '#2c3e50', marginBottom: '0.5rem' }}>Board Members</h3>
-            <p style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Manage board members</p>
+            <h3 style={{ color: '#4a0c0e', marginBottom: '0.5rem' }}>Board Members</h3>
+            <p style={{ color: '#5b4636', fontSize: '0.9rem' }}>Manage board members</p>
           </div>
 
           {/* Dashboard Admin */}
           <div style={{
             background: 'white',
-            border: '1px solid #ecf0f1',
+            border: '1px solid #f7e8c8',
             borderRadius: '8px',
             padding: '2rem',
             textAlign: 'center',
@@ -276,8 +276,8 @@ export default function AdminHome() {
           onClick={() => navigate('/donors')}
           >
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💰</div>
-            <h3 style={{ color: '#2c3e50', marginBottom: '0.5rem' }}>Donations</h3>
-            <p style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Record and review donations</p>
+            <h3 style={{ color: '#4a0c0e', marginBottom: '0.5rem' }}>Donations</h3>
+            <p style={{ color: '#5b4636', fontSize: '0.9rem' }}>Record and review donations</p>
           </div>
         </div>
       </div>

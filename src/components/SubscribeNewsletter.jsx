@@ -96,8 +96,8 @@ const SubscribeNewsletter = ({ isDarkMode = false }) => {
     <div style={{
       padding: '2rem',
       borderRadius: '12px',
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa',
-      border: isDarkMode ? '2px solid #333' : '2px solid #e9ecef',
+      backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+      border: isDarkMode ? '2px solid #333' : '1px solid #c98e1b',
       maxWidth: '600px',
       margin: '2rem auto',
       boxShadow: isDarkMode ? '0 4px 8px rgba(255,255,255,0.1)' : '0 4px 8px rgba(0,0,0,0.1)',
@@ -108,21 +108,20 @@ const SubscribeNewsletter = ({ isDarkMode = false }) => {
         <h2 style={{
           fontSize: '1.8rem',
           fontWeight: 'bold',
-          color: isDarkMode ? '#fff' : '#0B1C3F',
+          color: isDarkMode ? '#fff' : '#4a0c0e',
           margin: '0 0 0.5rem 0',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '0.5rem'
-        }}>
-          📧 Subscribe to Temple News
+        }}>Subscribe to Temple News
         </h2>
         <p style={{
           color: isDarkMode ? '#aaa' : '#666',
           margin: '0',
           fontSize: '0.95rem'
         }}>
-          Receive weekly temple events every Sunday at 2:00 AM
+          A short note every Sunday with the week’s pujas and festivals.
         </p>
       </div>
 
@@ -136,7 +135,7 @@ const SubscribeNewsletter = ({ isDarkMode = false }) => {
           marginBottom: '1rem'
         }}>
           <div style={{
-            color: isDarkMode ? '#90ee90' : '#2e7d32',
+            color: isDarkMode ? '#c8dcb5' : '#2e7d32',
             marginBottom: '0.5rem',
             fontWeight: 'bold',
             fontSize: '1.1rem'
@@ -204,8 +203,8 @@ const SubscribeNewsletter = ({ isDarkMode = false }) => {
               }}
               onFocus={(e) => {
                 if (!loading) {
-                  e.target.style.borderColor = '#E6B325';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(230, 179, 37, 0.1)';
+                  e.target.style.borderColor = '#c98e1b';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(201, 142, 27, 0.1)';
                 }
               }}
               onBlur={(e) => {
@@ -224,20 +223,18 @@ const SubscribeNewsletter = ({ isDarkMode = false }) => {
               padding: '0.8rem 1.5rem',
               fontSize: '1rem',
               fontWeight: 'bold',
-              backgroundColor: '#E6B325',
-              color: '#0B1C3F',
+              backgroundColor: '#c98e1b',
+              color: '#4a0c0e',
               border: 'none',
               borderRadius: '6px',
               cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease',
               opacity: loading ? 0.7 : 1,
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
             }}
-            onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#d4a820')}
-            onMouseLeave={(e) => !loading && (e.target.style.backgroundColor = '#E6B325')}
+            onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#e8c46a')}
+            onMouseLeave={(e) => !loading && (e.target.style.backgroundColor = '#c98e1b')}
           >
-            {loading ? '⏳ Subscribing...' : '✉️ Subscribe Now'}
+            {loading ? 'Subscribing…' : 'Subscribe'}
           </button>
         </form>
       )}
@@ -254,7 +251,7 @@ const SubscribeNewsletter = ({ isDarkMode = false }) => {
             ? (isDarkMode ? '#0d3d0d' : '#e8f5e9')
             : (isDarkMode ? '#3d0d0d' : '#ffebee'),
           color: messageType === 'success'
-            ? (isDarkMode ? '#90ee90' : '#2e7d32')
+            ? (isDarkMode ? '#c8dcb5' : '#2e7d32')
             : (isDarkMode ? '#ff6b6b' : '#c62828'),
           border: messageType === 'success'
             ? (isDarkMode ? '1px solid #1b5e1b' : '1px solid #c8e6c9')
@@ -266,61 +263,7 @@ const SubscribeNewsletter = ({ isDarkMode = false }) => {
       )}
 
       {/* Features List */}
-      <div style={{
-        marginTop: '1.5rem',
-        paddingTop: '1.5rem',
-        borderTop: isDarkMode ? '1px solid #333' : '1px solid #e9ecef'
-      }}>
-        <h4 style={{
-          color: isDarkMode ? '#e0e0e0' : '#0B1C3F',
-          fontSize: '0.9rem',
-          fontWeight: 'bold',
-          margin: '0 0 0.8rem 0',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          📋 What You'll Get:
-        </h4>
-        <ul style={{
-          listStyle: 'none',
-          padding: '0',
-          margin: '0',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem'
-        }}>
-          {[
-            '📅 Weekly temple events & schedules',
-            '🎉 Festival announcements & celebrations',
-            '🙏 Special rituals & prayers',
-            '📢 Important temple announcements'
-          ].map((feature, idx) => (
-            <li key={idx} style={{
-              color: isDarkMode ? '#bbb' : '#666',
-              fontSize: '0.9rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              {feature}
-            </li>
-          ))}
-        </ul>
-      </div>
 
-      {/* Style for animation */}
-      <style>{`
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 };
