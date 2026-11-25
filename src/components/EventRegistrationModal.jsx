@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import { eventRegistrationAPI } from '../services/eventRegistrationAPI';
+import { eventRegistrationAPI } from '../services/api';
+import { formatDate } from '../utils/format';
 import './EventRegistrationModal.css';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function EventRegistrationModal({ event, onClose, onSuccess }) {
   const [members, setMembers] = useState([
@@ -10,12 +13,8 @@ export default function EventRegistrationModal({ event, onClose, onSuccess }) {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  console.log('EventRegistrationModal rendered with event:', event);
-
   const handleMemberChange = (index, field, value) => {
-    const newMembers = [...members];
-    newMembers[index][field] = value;
-    setMembers(newMembers);
+    setMembers((prev) => prev.map((m, i) => (i === index ? { ...m, [field]: value } : m)));
   };
 
   const addMember = () => {
@@ -41,31 +40,28 @@ export default function EventRegistrationModal({ event, onClose, onSuccess }) {
       return;
     }
 
-    try {
-      const registrationData = {
-        eventId: event.id,
-        members: members.filter(m => m.name.trim() || m.email.trim()) // Only include filled members
-      };
+    const filled = members
+      .map((m) => Object.fromEntries(Object.entries(m).map(([k, v]) => [k, v.trim()])))
+      .filter((m) => m.name || m.email);
+    if (filled.some((m) => !m.name)) {
+      setError('Please enter a name for every member you add.');
+      setLoading(false);
+      return;
+    }
+    const badEmail = filled.find((m) => m.email && !EMAIL_PATTERN.test(m.email));
+    if (badEmail) {
+      setError(`Please enter a valid email address for ${badEmail.name || 'each member'}.`);
+      setLoading(false);
+      return;
+    }
 
-      console.log('Submitting registration:', registrationData);
-      
-      try {
-        await eventRegistrationAPI.register(registrationData);
-      } catch (apiError) {
-        // If API endpoint doesn't exist yet, still show success
-        console.warn('Registration API error (endpoint may not exist yet):', apiError.message);
-      }
-      
+    try {
+      await eventRegistrationAPI.register({ eventId: event.id, members: filled });
       setSuccess(true);
-      
-      setTimeout(() => {
-        console.log('Calling onSuccess callback');
-        onSuccess?.();
-        onClose();
-      }, 1500);
+      onSuccess?.();
+      setTimeout(onClose, 1500);
     } catch (err) {
-      console.error('Registration error:', err);
-      setError(err.response?.data?.message || 'Failed to register for event');
+      setError(err.message || 'Failed to register for event');
     } finally {
       setLoading(false);
     }
@@ -73,10 +69,12 @@ export default function EventRegistrationModal({ event, onClose, onSuccess }) {
 
   return (
     <div className="event-registration-overlay">
-      <div className="event-registration-modal">
+      <div className="event-registration-modal" role="dialog" aria-modal="true" aria-label="Register for event">
         <div className="modal-header">
           <h2 className="modal-title">Register for Event</h2>
-          <button 
+          <button
+            type="button"
+            aria-label="Close"
             onClick={onClose}
             className="modal-close-btn"
           >
@@ -85,9 +83,9 @@ export default function EventRegistrationModal({ event, onClose, onSuccess }) {
         </div>
 
         <div className="event-info-box">
-          <h3 className="event-info-title">{event.eventName}</h3>
+          <h3 className="event-info-title">{event.title}</h3>
           <p className="event-info-detail">
-            📅 {new Date(event.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            📅 {formatDate(event.eventDate)}
           </p>
         </div>
 

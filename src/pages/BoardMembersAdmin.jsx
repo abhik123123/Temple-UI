@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { boardMembersAPI } from '../services/boardMembersAPI';
+import { boardMembersAPI } from '../services/api';
 
 const translations = {
   en: {
@@ -84,33 +84,9 @@ const translations = {
   }
 };
 
-// Mock data
-const MOCK_MEMBERS = [
-  {
-    id: 1,
-    name: 'Rajesh Kumar',
-    position: 'President',
-    department: 'Leadership',
-    email: 'rajesh@temple.com',
-    phone: '9876543210',
-    experience: 20,
-    description: 'Senior board member with extensive experience'
-  },
-  {
-    id: 2,
-    name: 'Priya Singh',
-    position: 'Vice President',
-    department: 'Leadership',
-    email: 'priya@temple.com',
-    phone: '9876543211',
-    experience: 15,
-    description: 'Finance and administration expert'
-  }
-];
-
 export default function BoardMembersAdmin() {
   const { language } = useLanguage();
-  const { user, isAuthenticated } = useAuth();
+  const { isAdmin } = useAuth();
   const t = translations[language] || translations.en;
 
   const [members, setMembers] = useState([]);
@@ -119,23 +95,24 @@ export default function BoardMembersAdmin() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     position: '',
     department: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     experience: '',
-    description: ''
+    bio: ''
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
+    if (isAdmin) {
       fetchMembers();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
 
   const fetchMembers = async () => {
     try {
@@ -145,9 +122,7 @@ export default function BoardMembersAdmin() {
       setMembers(membersList);
       setError(null);
     } catch (err) {
-      console.warn('Backend not available, using mock data:', err.message);
-      setMembers(MOCK_MEMBERS);
-      setError(null);
+      setError(err.message || t.error);
     } finally {
       setLoading(false);
     }
@@ -166,22 +141,22 @@ export default function BoardMembersAdmin() {
       } else {
         await boardMembersAPI.create(formData);
       }
-      fetchMembers();
+      await fetchMembers();
       resetForm();
     } catch (err) {
-      alert(err.response?.data?.message || t.error);
+      setError(err.message || t.error);
     }
   };
 
   const handleEdit = (member) => {
     setFormData({
-      name: member.name || '',
+      fullName: member.fullName || '',
       position: member.position || '',
       department: member.department || '',
       email: member.email || '',
-      phone: member.phone || '',
-      experience: member.experience || '',
-      description: member.description || ''
+      phoneNumber: member.phoneNumber || '',
+      experience: member.experience ?? '',
+      bio: member.bio || ''
     });
     setEditingId(member.id);
     setShowForm(true);
@@ -190,22 +165,22 @@ export default function BoardMembersAdmin() {
   const handleDelete = async (id) => {
     try {
       await boardMembersAPI.delete(id);
-      fetchMembers();
+      await fetchMembers();
       setShowDeleteConfirm(null);
     } catch (err) {
-      alert(err.response?.data?.message || t.error);
+      setError(err.message || t.error);
     }
   };
 
   const resetForm = () => {
     setFormData({
-      name: '',
+      fullName: '',
       position: '',
       department: '',
       email: '',
-      phone: '',
+      phoneNumber: '',
       experience: '',
-      description: ''
+      bio: ''
     });
     setEditingId(null);
     setShowForm(false);
@@ -220,7 +195,7 @@ export default function BoardMembersAdmin() {
   }
 
   // Check admin access
-  if (isAuthenticated && user?.role !== 'admin') {
+  if (!isAdmin) {
     return (
       <div style={{
         padding: '40px 20px',
@@ -322,8 +297,8 @@ export default function BoardMembersAdmin() {
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="fullName"
+                    value={formData.fullName}
                     onChange={handleInputChange}
                     required
                     style={{
@@ -434,8 +409,8 @@ export default function BoardMembersAdmin() {
                   </label>
                   <input
                     type="tel"
-                    name="phone"
-                    value={formData.phone}
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
                     onChange={handleInputChange}
                     style={{
                       width: '100%',
@@ -454,8 +429,8 @@ export default function BoardMembersAdmin() {
                   {t.description}
                 </label>
                 <textarea
-                  name="description"
-                  value={formData.description}
+                  name="bio"
+                  value={formData.bio}
                   onChange={handleInputChange}
                   rows="4"
                   style={{
@@ -543,7 +518,7 @@ export default function BoardMembersAdmin() {
                   background: 'linear-gradient(135deg, #0B1C3F 0%, #112A57 100%)',
                   color: 'white'
                 }}>
-                  <h3 style={{ margin: '0 0 5px 0' }}>{member.name}</h3>
+                  <h3 style={{ margin: '0 0 5px 0' }}>{member.fullName}</h3>
                   <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>
                     {member.position}
                   </p>
@@ -557,13 +532,13 @@ export default function BoardMembersAdmin() {
                     📧 {member.email}
                   </p>
                   <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>
-                    📞 {member.phone}
+                    📞 {member.phoneNumber}
                   </p>
                   <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '14px' }}>
                     ⭐ {member.experience} years experience
                   </p>
                   <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '13px', lineHeight: '1.4' }}>
-                    {member.description?.substring(0, 100)}...
+                    {member.bio && (member.bio.length > 100 ? `${member.bio.substring(0, 100)}…` : member.bio)}
                   </p>
 
                   <div style={{ display: 'flex', gap: '10px' }}>

@@ -1,23 +1,12 @@
 import { useLanguage } from '../context/LanguageContext';
 import { useTempleTimings } from '../hooks/useAPI';
+import { formatTime } from '../utils/format';
 
 export default function Timings() {
   const { t } = useLanguage();
   const { timings: backendTimings, loading, error } = useTempleTimings();
 
-  // Fallback mock data in case backend is unavailable
-  const displayTimings = loading ? [] : backendTimings || [];
-
-  const formatTime = (timeString) => {
-    if (!timeString) return '';
-    // Handle both HH:mm:ss and HH:mm formats
-    const parts = timeString.split(':');
-    const hours = parseInt(parts[0]);
-    const minutes = parts[1] || '00';
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHour = hours % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
+  const displayTimings = loading ? [] : backendTimings;
 
   return (
     <div className="page">
@@ -53,7 +42,7 @@ export default function Timings() {
 
         {error && (
           <div style={{ background: '#ffe5e5', padding: '1rem', borderRadius: '4px', color: '#d32f2f', marginBottom: '2rem' }}>
-            ⚠️ {error} - Showing default timings
+            ⚠️ {error}
           </div>
         )}
         

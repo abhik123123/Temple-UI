@@ -1,36 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { eventsAPI } from '../services/templeAPI';
+import { eventsAPI } from '../services/api';
+import { resolveAssetUrl } from '../services/httpClient';
+import { formatDate, formatTime, toApiTime, toInputTime } from '../utils/format';
 
-// Helper function to get the API base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
-
-// Helper function to construct full image URL
-const getImageUrl = (imageData) => {
-  if (!imageData) return null;
-  
-  // If it's already a full URL (http:// or https://)
-  if (typeof imageData === 'string' && (imageData.startsWith('http://') || imageData.startsWith('https://'))) {
-    return imageData;
-  }
-  
-  // If it's a relative path, construct full URL
-  if (typeof imageData === 'string') {
-    // Remove leading slash if present to avoid double slashes
-    const cleanPath = imageData.startsWith('/') ? imageData.substring(1) : imageData;
-    return `${API_BASE_URL}/${cleanPath}`;
-  }
-  
-  // If backend returns an object with photoUrl or similar
-  if (typeof imageData === 'object') {
-    if (imageData.photoUrl) return getImageUrl(imageData.photoUrl);
-    if (imageData.imageUrl) return getImageUrl(imageData.imageUrl);
-    if (imageData.url) return getImageUrl(imageData.url);
-  }
-  
-  return null;
-};
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB before compression
+const MAX_IMAGE_DIMENSION = 1600; // px; keeps uploads small and fast
 
 const translations = {
   en: {
@@ -113,44 +89,10 @@ const translations = {
   }
 };
 
-// Mock data for when backend is not available
-const MOCK_EVENTS = [
-  {
-    id: 1,
-    title: 'Diwali Celebration',
-    date: '2025-11-15',
-    startTime: '18:00',
-    endTime: '22:00',
-    location: 'Temple Main Hall',
-    description: 'Join us for a spectacular Diwali celebration with traditional rituals, prayers, and community gathering. Light lamps, celebrate with family, and enjoy the festive atmosphere.',
-    category: 'Festival'
-  },
-  {
-    id: 2,
-    title: 'Lord Shiva Puja',
-    date: '2025-12-01',
-    startTime: '06:00',
-    endTime: '08:00',
-    location: 'Inner Sanctum',
-    description: 'Special prayer ceremony dedicated to Lord Shiva. Participate in the holy rituals and receive blessings from the priests.',
-    category: 'Religious'
-  },
-  {
-    id: 3,
-    title: 'Bhajan Singing Session',
-    date: '2025-12-10',
-    startTime: '19:00',
-    endTime: '21:00',
-    location: 'Temple Auditorium',
-    description: 'Experience the divine music of bhajans. Community singing session with traditional and modern devotional songs.',
-    category: 'Cultural'
-  }
-];
-
 
 export default function EventsAdmin() {
   const { language } = useLanguage();
-  const { user, isAuthenticated } = useAuth();
+  const { isAdmin } = useAuth();
   const t = translations[language] || translations.en;
 
   const [events, setEvents] = useState([]);
@@ -170,39 +112,31 @@ export default function EventsAdmin() {
     imageFile: null
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
+    if (isAdmin) {
       fetchEvents();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
 
   const fetchEvents = async () => {
     try {
       setLoading(true);
       const data = await eventsAPI.getAll();
-      const eventsArray = Array.isArray(data) ? data : data?.data || [];
-      
-      // Process events to convert image URLs
-      const processedEvents = eventsArray.map(event => ({
-        ...event,
-        // Map backend field names to frontend field names
-        title: event.eventName || event.title,
-        date: event.eventDate || event.date,
-        // Process imageUrl - backend may return photoUrl, imageUrl, or image object
-        imageUrl: getImageUrl(event.photoUrl || event.imageUrl || event.image)
-      }));
-      
-      console.log('Fetched events:', processedEvents);
-      setEvents(processedEvents);
+      setEvents(
+        (Array.isArray(data) ? data : []).map((event) => ({
+          ...event,
+          date: event.eventDate,
+          imageUrl: resolveAssetUrl(event.imageUrl),
+        }))
+      );
       setError(null);
     } catch (err) {
-      // Use mock data if backend is not available
-      console.warn('Backend not available, using mock data:', err.message);
-      setEvents(MOCK_EVENTS);
-      setError(null);
+      setError(err.message || t.error);
     } finally {
       setLoading(false);
     }
@@ -214,137 +148,73 @@ export default function EventsAdmin() {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Validate it's an image file
-      if (!file.type.startsWith('image/')) {
-        alert('Please select a valid image file');
-        return;
-      }
-      
-      // Convert all images to JPEG for backend compatibility
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          // Create canvas and draw image
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-          
-          // Convert to JPEG blob (backend supports JPEG)
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                // Create a new File object from the blob
-                const jpegFile = new File([blob], `image-${Date.now()}.jpg`, { type: 'image/jpeg' });
-                
-                // Also create preview
-                const previewReader = new FileReader();
-                previewReader.onloadend = () => {
-                  setFormData(prev => ({
-                    ...prev,
-                    imageFile: jpegFile,
-                    imageUrl: previewReader.result // Store base64 for preview
-                  }));
-                };
-                previewReader.readAsDataURL(blob);
-              } else {
-                console.error('Failed to convert image to blob');
-                alert('Failed to process image. Please try another image.');
-              }
-            },
-            'image/jpeg',
-            0.85 // Quality 85%
-          );
-        };
-        img.onerror = () => {
-          console.error('Failed to load image');
-          alert('Failed to load image. Please try another image.');
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file.');
+      return;
     }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError('Image is too large. Please choose a file under 10 MB.');
+      return;
+    }
+
+    // Re-encode as a resized JPEG: normalises formats (HEIC/WebP/PNG) the
+    // backend may not accept and keeps uploads small.
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(objectUrl);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            setError('Failed to process image. Please try another image.');
+            return;
+          }
+          const jpegFile = new File([blob], `event-${Date.now()}.jpg`, { type: 'image/jpeg' });
+          setFormData((prev) => ({ ...prev, imageFile: jpegFile, imageUrl: canvas.toDataURL('image/jpeg', 0.6) }));
+        },
+        'image/jpeg',
+        0.85
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      setError('Failed to load image. Please try another image.');
+    };
+    img.src = objectUrl;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    const payload = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      eventDate: formData.date,
+      startTime: toApiTime(formData.startTime),
+      endTime: toApiTime(formData.endTime),
+      location: formData.location.trim(),
+      category: formData.category,
+    };
     try {
-      // Prepare FormData for multipart submission when image is present
-      let submitData;
-      
-      if (formData.imageFile) {
-        // Use FormData for multipart/form-data with proper structure
-        // Backend expects: event (JSON) and photo (file)
-        submitData = new FormData();
-        
-        // Create the event JSON object matching backend field names
-        const eventData = {
-          eventName: formData.title,
-          description: formData.description,
-          eventDate: formData.date,
-          startTime: formData.startTime ? (formData.startTime.split(':').length === 2 ? formData.startTime + ':00' : formData.startTime) : null,
-          endTime: formData.endTime ? (formData.endTime.split(':').length === 2 ? formData.endTime + ':00' : formData.endTime) : null,
-          location: formData.location,
-          category: formData.category,
-          status: 'Upcoming'
-        };
-        
-        // Append event data as JSON blob with proper content type
-        const eventBlob = new Blob([JSON.stringify(eventData)], {
-          type: 'application/json'
-        });
-        submitData.append('event', eventBlob);
-        
-        // Append photo file with correct part name and ensure JPEG mime type
-        submitData.append('photo', formData.imageFile, formData.imageFile.name);
-        
-        console.log('Submitting with image:', {
-          operation: editingId ? 'update' : 'create',
-          imageFile: formData.imageFile.name,
-          imageType: formData.imageFile.type,
-          imageSize: formData.imageFile.size,
-          eventData: eventData
-        });
-      } else {
-        // Send as JSON when no new file (for updates without image change)
-        submitData = {
-          eventName: formData.title,
-          description: formData.description,
-          eventDate: formData.date,
-          startTime: formData.startTime ? (formData.startTime.split(':').length === 2 ? formData.startTime + ':00' : formData.startTime) : null,
-          endTime: formData.endTime ? (formData.endTime.split(':').length === 2 ? formData.endTime + ':00' : formData.endTime) : null,
-          location: formData.location,
-          category: formData.category,
-          status: 'Upcoming'
-        };
-        
-        console.log('Submitting without image:', {
-          operation: editingId ? 'update' : 'create',
-          data: submitData
-        });
-      }
-      
+      setSubmitting(true);
       if (editingId) {
-        const result = await eventsAPI.update(editingId, submitData);
-        console.log('Update response:', result);
+        await eventsAPI.update(editingId, payload, formData.imageFile);
       } else {
-        const result = await eventsAPI.create(submitData);
-        console.log('Create response:', result);
+        await eventsAPI.create(payload, formData.imageFile);
       }
-      fetchEvents();
+      await fetchEvents();
       resetForm();
     } catch (err) {
-      console.error('Submit error:', err);
-      console.error('Error details:', {
-        response: err.response?.data,
-        status: err.response?.status,
-        headers: err.response?.headers
-      });
-      alert(err.response?.data?.message || err.message || t.error);
+      setError(err.message || t.error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -352,8 +222,8 @@ export default function EventsAdmin() {
     setFormData({
       title: event.title || '',
       date: event.date || '',
-      startTime: event.startTime || '',
-      endTime: event.endTime || '',
+      startTime: toInputTime(event.startTime),
+      endTime: toInputTime(event.endTime),
       location: event.location || '',
       description: event.description || '',
       category: event.category || 'Festival',
@@ -367,10 +237,10 @@ export default function EventsAdmin() {
   const handleDelete = async (id) => {
     try {
       await eventsAPI.delete(id);
-      fetchEvents();
+      await fetchEvents();
       setShowDeleteConfirm(null);
     } catch (err) {
-      alert(err.response?.data?.message || t.error);
+      setError(err.message || t.error);
     }
   };
 
@@ -390,22 +260,6 @@ export default function EventsAdmin() {
     setShowForm(false);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
-  const formatTime = (timeString) => {
-    if (!timeString) return '';
-    const parts = timeString.split(':');
-    const hours = parseInt(parts[0]);
-    const minutes = parts[1] || '00';
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHour = hours % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
   if (loading) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', minHeight: '60vh' }}>
@@ -415,7 +269,7 @@ export default function EventsAdmin() {
   }
 
   // Check admin access
-  if (isAuthenticated && user?.role !== 'admin') {
+  if (!isAdmin) {
     return (
       <div style={{
         padding: '40px 20px',
@@ -707,6 +561,7 @@ export default function EventsAdmin() {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   type="submit"
+                  disabled={submitting}
                   style={{
                     padding: '12px 24px',
                     backgroundColor: '#0B1C3F',
@@ -720,7 +575,7 @@ export default function EventsAdmin() {
                   onMouseEnter={e => e.target.style.opacity = '0.9'}
                   onMouseLeave={e => e.target.style.opacity = '1'}
                 >
-                  {t.save}
+                  {submitting ? t.loading : t.save}
                 </button>
                 <button
                   type="button"

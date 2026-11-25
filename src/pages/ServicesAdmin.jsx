@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { servicesAPI } from '../services/templeAPI';
+import { servicesAPI } from '../services/api';
 
 const translations = {
   en: {
@@ -78,29 +78,9 @@ const translations = {
   }
 };
 
-// Mock data for when backend is not available
-const MOCK_SERVICES = [
-  {
-    id: 1,
-    title: 'Puja Ceremony',
-    description: 'Traditional prayer ceremony with priest guidance',
-    duration: 60,
-    price: 500,
-    category: 'Ritual'
-  },
-  {
-    id: 2,
-    title: 'Temple Tour',
-    description: 'Guided tour of the temple and its sacred spaces',
-    duration: 45,
-    price: 200,
-    category: 'Tour'
-  }
-];
-
 export default function ServicesAdmin() {
   const { language } = useLanguage();
-  const { user, isAuthenticated } = useAuth();
+  const { isAdmin } = useAuth();
   const t = translations[language] || translations.en;
 
   const [services, setServices] = useState([]);
@@ -109,7 +89,7 @@ export default function ServicesAdmin() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     description: '',
     duration: '',
     price: '',
@@ -118,12 +98,13 @@ export default function ServicesAdmin() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
+    if (isAdmin) {
       fetchServices();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
 
   const fetchServices = async () => {
     try {
@@ -132,9 +113,7 @@ export default function ServicesAdmin() {
       setServices(Array.isArray(data) ? data : data?.data || []);
       setError(null);
     } catch (err) {
-      console.warn('Backend not available, using mock data:', err.message);
-      setServices(MOCK_SERVICES);
-      setError(null);
+      setError(err.message || t.error);
     } finally {
       setLoading(false);
     }
@@ -153,19 +132,19 @@ export default function ServicesAdmin() {
       } else {
         await servicesAPI.create(formData);
       }
-      fetchServices();
+      await fetchServices();
       resetForm();
     } catch (err) {
-      alert(err.response?.data?.message || t.error);
+      setError(err.message || t.error);
     }
   };
 
   const handleEdit = (service) => {
     setFormData({
-      title: service.title || '',
+      name: service.name || '',
       description: service.description || '',
-      duration: service.duration || '',
-      price: service.price || '',
+      duration: service.duration ?? '',
+      price: service.price ?? '',
       category: service.category || 'Ritual'
     });
     setEditingId(service.id);
@@ -175,16 +154,16 @@ export default function ServicesAdmin() {
   const handleDelete = async (id) => {
     try {
       await servicesAPI.delete(id);
-      fetchServices();
+      await fetchServices();
       setShowDeleteConfirm(null);
     } catch (err) {
-      alert(err.response?.data?.message || t.error);
+      setError(err.message || t.error);
     }
   };
 
   const resetForm = () => {
     setFormData({
-      title: '',
+      name: '',
       description: '',
       duration: '',
       price: '',
@@ -203,7 +182,7 @@ export default function ServicesAdmin() {
   }
 
   // Check admin access
-  if (isAuthenticated && user?.role !== 'admin') {
+  if (!isAdmin) {
     return (
       <div style={{
         padding: '40px 20px',
@@ -299,8 +278,8 @@ export default function ServicesAdmin() {
                 </label>
                 <input
                   type="text"
-                  name="title"
-                  value={formData.title}
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   required
                   style={{
@@ -479,7 +458,7 @@ export default function ServicesAdmin() {
                   background: 'linear-gradient(135deg, #0B1C3F 0%, #112A57 100%)',
                   color: 'white'
                 }}>
-                  <h3 style={{ margin: '0 0 5px 0' }}>{service.title}</h3>
+                  <h3 style={{ margin: '0 0 5px 0' }}>{service.name}</h3>
                   <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>
                     {service.category || 'Service'}
                   </p>

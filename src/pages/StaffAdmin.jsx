@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { staffAPI } from '../services/templeAPI';
+import { staffAPI } from '../services/api';
 
 const translations = {
   en: {
@@ -81,31 +81,9 @@ const translations = {
   }
 };
 
-// Mock data
-const MOCK_STAFF = [
-  {
-    id: 1,
-    name: 'Rajesh Kumar',
-    position: 'Head Priest',
-    email: 'rajesh@temple.com',
-    phone: '9876543210',
-    experience: 15,
-    description: 'Senior priest with 15 years of experience'
-  },
-  {
-    id: 2,
-    name: 'Priya Singh',
-    position: 'Manager',
-    email: 'priya@temple.com',
-    phone: '9876543211',
-    experience: 8,
-    description: 'Temple manager and administrator'
-  }
-];
-
 export default function StaffAdmin() {
   const { language } = useLanguage();
-  const { user, isAuthenticated } = useAuth();
+  const { isAdmin } = useAuth();
   const t = translations[language] || translations.en;
 
   const [staff, setStaff] = useState([]);
@@ -114,22 +92,23 @@ export default function StaffAdmin() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     position: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     experience: '',
-    description: ''
+    bio: ''
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
+    if (isAdmin) {
       fetchStaff();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
 
   const fetchStaff = async () => {
     try {
@@ -138,9 +117,7 @@ export default function StaffAdmin() {
       setStaff(Array.isArray(data) ? data : data?.data || []);
       setError(null);
     } catch (err) {
-      console.warn('Backend not available, using mock data:', err.message);
-      setStaff(MOCK_STAFF);
-      setError(null);
+      setError(err.message || t.error);
     } finally {
       setLoading(false);
     }
@@ -159,21 +136,21 @@ export default function StaffAdmin() {
       } else {
         await staffAPI.create(formData);
       }
-      fetchStaff();
+      await fetchStaff();
       resetForm();
     } catch (err) {
-      alert(err.response?.data?.message || t.error);
+      setError(err.message || t.error);
     }
   };
 
   const handleEdit = (staffMember) => {
     setFormData({
-      name: staffMember.name || '',
+      fullName: staffMember.fullName || '',
       position: staffMember.position || '',
       email: staffMember.email || '',
-      phone: staffMember.phone || '',
-      experience: staffMember.experience || '',
-      description: staffMember.description || ''
+      phoneNumber: staffMember.phoneNumber || '',
+      experience: staffMember.experience ?? '',
+      bio: staffMember.bio || ''
     });
     setEditingId(staffMember.id);
     setShowForm(true);
@@ -182,21 +159,21 @@ export default function StaffAdmin() {
   const handleDelete = async (id) => {
     try {
       await staffAPI.delete(id);
-      fetchStaff();
+      await fetchStaff();
       setShowDeleteConfirm(null);
     } catch (err) {
-      alert(err.response?.data?.message || t.error);
+      setError(err.message || t.error);
     }
   };
 
   const resetForm = () => {
     setFormData({
-      name: '',
+      fullName: '',
       position: '',
       email: '',
-      phone: '',
+      phoneNumber: '',
       experience: '',
-      description: ''
+      bio: ''
     });
     setEditingId(null);
     setShowForm(false);
@@ -211,7 +188,7 @@ export default function StaffAdmin() {
   }
 
   // Check admin access
-  if (isAuthenticated && user?.role !== 'admin') {
+  if (!isAdmin) {
     return (
       <div style={{
         padding: '40px 20px',
@@ -313,8 +290,8 @@ export default function StaffAdmin() {
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="fullName"
+                    value={formData.fullName}
                     onChange={handleInputChange}
                     required
                     style={{
@@ -379,8 +356,8 @@ export default function StaffAdmin() {
                   </label>
                   <input
                     type="tel"
-                    name="phone"
-                    value={formData.phone}
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
                     onChange={handleInputChange}
                     style={{
                       width: '100%',
@@ -419,8 +396,8 @@ export default function StaffAdmin() {
                   {t.description}
                 </label>
                 <textarea
-                  name="description"
-                  value={formData.description}
+                  name="bio"
+                  value={formData.bio}
                   onChange={handleInputChange}
                   rows="4"
                   style={{
@@ -508,7 +485,7 @@ export default function StaffAdmin() {
                   background: 'linear-gradient(135deg, #0B1C3F 0%, #112A57 100%)',
                   color: 'white'
                 }}>
-                  <h3 style={{ margin: '0 0 5px 0' }}>{member.name}</h3>
+                  <h3 style={{ margin: '0 0 5px 0' }}>{member.fullName}</h3>
                   <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>
                     {member.position}
                   </p>
@@ -519,13 +496,13 @@ export default function StaffAdmin() {
                     📧 {member.email}
                   </p>
                   <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>
-                    📞 {member.phone}
+                    📞 {member.phoneNumber}
                   </p>
                   <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '14px' }}>
                     ⭐ {member.experience} years experience
                   </p>
                   <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '13px', lineHeight: '1.4' }}>
-                    {member.description?.substring(0, 100)}...
+                    {member.bio && (member.bio.length > 100 ? `${member.bio.substring(0, 100)}…` : member.bio)}
                   </p>
 
                   <div style={{ display: 'flex', gap: '10px' }}>

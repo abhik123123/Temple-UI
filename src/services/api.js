@@ -1,142 +1,75 @@
-import axios from 'axios';
-import config from '../config/environment';
+/**
+ * Typed-ish wrappers for every backend endpoint the UI uses.
+ *
+ * Every function resolves with the response body (not the axios response)
+ * and rejects with an `ApiError` (see httpClient.js).
+ */
+import httpClient from './httpClient';
 
-// Create axios instance with base URL
-const apiClient = axios.create({
-  baseURL: config.backendUrl,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: false, // Set to true if backend uses session cookies
+const body = (promise) => promise.then((res) => res.data);
+
+const crud = (resource) => ({
+  getAll: (params) => body(httpClient.get(`/${resource}`, { params })),
+  getById: (id) => body(httpClient.get(`/${resource}/${encodeURIComponent(id)}`)),
+  create: (data) => body(httpClient.post(`/${resource}`, data)),
+  update: (id, data) => body(httpClient.put(`/${resource}/${encodeURIComponent(id)}`, data)),
+  delete: (id) => body(httpClient.delete(`/${resource}/${encodeURIComponent(id)}`)),
 });
 
-// Add request interceptor to include JWT token and handle CORS
-apiClient.interceptors.request.use(
-  (request) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      request.headers.Authorization = `Bearer ${token}`;
-    }
-    // Add CORS headers hint
-    request.headers['Access-Control-Allow-Credentials'] = 'true';
-    console.log(`[API] ${request.method?.toUpperCase()} ${request.url}`, request.data);
-    return request;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Add response interceptor to handle errors
-apiClient.interceptors.response.use(
-  (response) => {
-    console.log(`[API Response] ${response.status}`, response.data);
-    return response;
-  },
-  (error) => {
-    console.error(`[API Error] ${error.message}`, error.response?.status, error.response?.data);
-    if (error.response?.status === 401) {
-      // Handle unauthorized - clear token and redirect to login
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
-    }
-    if (error.response?.status === 403) {
-      // Handle forbidden - might need authentication
-      console.error('Access Forbidden (403) - Backend may require authentication');
-    }
-    return Promise.reject(error);
-  }
-);
-
-// Temple Timings API
-export const templeTimingsAPI = {
-  getAll: () => apiClient.get('/api/timings'),
-  getById: (id) => apiClient.get(`/api/timings/${id}`),
-  getByDay: (day) => apiClient.get(`/api/timings/day/${day}`),
-  create: (data) => apiClient.post('/api/timings', data),
-  update: (id, data) => apiClient.put(`/api/timings/${id}`, data),
-  delete: (id) => apiClient.delete(`/api/timings/${id}`),
+/**
+ * Builds the multipart body the events endpoint expects:
+ *   part "event" -> application/json, part "photo" -> image file (optional)
+ */
+const toEventPayload = (event, photo) => {
+  if (!photo) return event;
+  const form = new FormData();
+  form.append('event', new Blob([JSON.stringify(event)], { type: 'application/json' }));
+  form.append('photo', photo, photo.name);
+  return form;
 };
 
-// Events API
 export const eventsAPI = {
-  getAll: () => apiClient.get('/api/events'),
-  getById: (id) => apiClient.get(`/api/events/${id}`),
-  getUpcoming: () => apiClient.get('/api/events'),
-  create: (data) => apiClient.post('/api/events', data),
-  delete: (id) => apiClient.delete(`/api/events/${id}`),
+  ...crud('events'),
+  create: (event, photo) => body(httpClient.post('/events', toEventPayload(event, photo))),
+  update: (id, event, photo) =>
+    body(httpClient.put(`/events/${encodeURIComponent(id)}`, toEventPayload(event, photo))),
 };
 
-// Service Items API
-export const servicesAPI = {
-  getAll: () => apiClient.get('/api/services'),
-  getById: (id) => apiClient.get(`/api/services/${id}`),
-  create: (data) => apiClient.post('/api/services', data),
-  update: (id, data) => apiClient.put(`/api/services/${id}`, data),
-  delete: (id) => apiClient.delete(`/api/services/${id}`),
+export const eventRegistrationAPI = {
+  register: (registration) => body(httpClient.post('/events/register', registration)),
+  getRegistrations: (eventId) =>
+    body(httpClient.get(`/events/${encodeURIComponent(eventId)}/registrations`)),
+  getStatistics: (eventId) =>
+    body(httpClient.get(`/events/${encodeURIComponent(eventId)}/registration-stats`)),
+  cancel: (registrationId) =>
+    body(httpClient.delete(`/events/registrations/${encodeURIComponent(registrationId)}`)),
 };
 
-// Priests API
-export const priestsAPI = {
-  getAll: () => apiClient.get('/api/priests'),
-  getById: (id) => apiClient.get(`/api/priests/${id}`),
-  create: (data) => apiClient.post('/api/priests', data),
-  update: (id, data) => apiClient.put(`/api/priests/${id}`, data),
-  delete: (id) => apiClient.delete(`/api/priests/${id}`),
-};
-export const contactAPI = {
-  submit: (data) => apiClient.post('/api/contact', data),
-};
+export const servicesAPI = crud('services');
+export const staffAPI = crud('staff');
+export const boardMembersAPI = crud('board-members');
 
-// Donors API
 export const donorsAPI = {
-  getAll: () => apiClient.get('/api/donors'),
-  getById: (id) => apiClient.get(`/api/donors/${id}`),
-  create: (data) => apiClient.post('/api/donors', data),
-  update: (id, data) => apiClient.put(`/api/donors/${id}`, data),
-  delete: (id) => apiClient.delete(`/api/donors/${id}`),
+  ...crud('donors'),
+  getStatistics: () => body(httpClient.get('/donors/statistics')),
 };
 
-// Authentication API
+export const timingsAPI = {
+  getAll: () => body(httpClient.get('/timings')),
+  /** `day` is a lower- or upper-case English weekday, e.g. "monday". */
+  update: (day, timing) => body(httpClient.put(`/timings/${encodeURIComponent(day)}`, timing)),
+};
+
+export const subscriptionAPI = {
+  subscribe: (email) => body(httpClient.post('/subscriptions/subscribe', { email })),
+  unsubscribe: (email) => body(httpClient.post('/subscriptions/unsubscribe', { email })),
+  getAllSubscribers: (page = 0, size = 10) =>
+    body(httpClient.get('/subscriptions/admin/all', { params: { page, size } })),
+  getStatistics: () => body(httpClient.get('/subscriptions/admin/stats')),
+  sendTestEmail: (email) => body(httpClient.post('/subscriptions/admin/send-test', { email })),
+};
+
 export const authAPI = {
-  login: (credentials) => apiClient.post('/api/auth/login', credentials),
-  logout: () => {
-    localStorage.removeItem('authToken');
-  },
+  login: (credentials) => body(httpClient.post('/auth/login', credentials)),
+  me: () => body(httpClient.get('/auth/me')),
 };
-
-// Sponsorship API
-export const sponsorshipAPI = {
-  getAll: () => apiClient.get('/api/sponsorships'),
-  getById: (id) => apiClient.get(`/api/sponsorships/${id}`),
-  create: (data) => apiClient.post('/api/sponsorships', data),
-  update: (id, data) => apiClient.put(`/api/sponsorships/${id}`, data),
-  delete: (id) => apiClient.delete(`/api/sponsorships/${id}`),
-};
-
-// Bhojanashala (Community Kitchen) API
-export const bhojanaShalaAPI = {
-  getAll: () => apiClient.get('/api/bhojanashala'),
-  getById: (id) => apiClient.get(`/api/bhojanashala/${id}`),
-  create: (data) => apiClient.post('/api/bhojanashala', data),
-  update: (id, data) => apiClient.put(`/api/bhojanashala/${id}`, data),
-  delete: (id) => apiClient.delete(`/api/bhojanashala/${id}`),
-};
-
-// Goshala (Cow Sanctuary) API
-export const goshakaAPI = {
-  getAll: () => apiClient.get('/api/goshala'),
-  getById: (id) => apiClient.get(`/api/goshala/${id}`),
-  create: (data) => apiClient.post('/api/goshala', data),
-  update: (id, data) => apiClient.put(`/api/goshala/${id}`, data),
-  delete: (id) => apiClient.delete(`/api/goshala/${id}`),
-};
-
-// Vidyalaya (Temple School) API
-export const vidyalayaAPI = {
-  getAll: () => apiClient.get('/api/vidyalaya'),
-  getById: (id) => apiClient.get(`/api/vidyalaya/${id}`),
-  create: (data) => apiClient.post('/api/vidyalaya', data),
-  update: (id, data) => apiClient.put(`/api/vidyalaya/${id}`, data),
-  delete: (id) => apiClient.delete(`/api/vidyalaya/${id}`),
-};
-
-export default apiClient;

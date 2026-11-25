@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { staffAPI } from '../services/staffAPI';
+import { staffAPI } from '../services/api';
+import { resolveAssetUrl } from '../services/httpClient';
 
 const departments = ['All', 'Religious', 'Operations', 'Community', 'Finance', 'Administration'];
 
@@ -17,17 +18,13 @@ export default function Staff() {
       setLoading(true);
       setError(null);
       try {
-        const response = department === 'All'
-          ? await staffAPI.getAll()
-          : await staffAPI.getByDepartment(department);
+        const data = await staffAPI.getAll(department === 'All' ? undefined : { department });
         if (!active) return;
-        const data = Array.isArray(response.data) ? response.data : response.data || [];
-        setStaff(data);
+        setStaff(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error('Failed to load staff members', err);
         if (active) {
           setStaff([]);
-          setError('Unable to connect to the backend. Please ensure it is running at http://localhost:8080.');
+          setError('Unable to load staff right now. Please try again later.');
         }
       } finally {
         if (active) setLoading(false);
@@ -90,7 +87,7 @@ export default function Staff() {
 
         {!loading && !staff.length && (
           <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#999' }}>
-            No staff data available. Please start the backend at http://localhost:8080.
+            No staff members to show yet.
           </div>
         )}
 
@@ -112,7 +109,7 @@ export default function Staff() {
                  }}>
               <div style={{ height: 200, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {member.profileImageUrl
-                  ? <img src={member.profileImageUrl} alt={member.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                  ? <img src={resolveAssetUrl(member.profileImageUrl)} alt={member.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   : <span style={{ fontSize: '2rem' }}>👤</span>
                 }
               </div>
@@ -140,7 +137,7 @@ export default function Staff() {
             </div>
             <div style={{ padding: '1.25rem' }}>
               {selected.profileImageUrl && (
-                <img src={selected.profileImageUrl} alt={selected.fullName} style={{ width: '100%', height: 260, objectFit: 'cover', borderRadius: 6 }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                <img src={resolveAssetUrl(selected.profileImageUrl)} alt={selected.fullName} style={{ width: '100%', height: 260, objectFit: 'cover', borderRadius: 6 }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
               )}
               <p style={{ margin: '0.5rem 0', color: '#333' }}><strong>Position:</strong> {selected.position}</p>
               <p style={{ margin: '0.5rem 0', color: '#333' }}><strong>Department:</strong> {selected.department}</p>

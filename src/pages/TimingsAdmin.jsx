@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { timingsAPI } from '../services/templeAPI';
+import { timingsAPI } from '../services/api';
+import { formatTime, toApiTime, toInputTime } from '../utils/format';
 
 const translations = {
   en: {
@@ -73,86 +74,85 @@ const translations = {
 };
 
 // Mock data
-const MOCK_TIMINGS = {
-  monday: { open: '06:00', close: '21:00' },
-  tuesday: { open: '06:00', close: '21:00' },
-  wednesday: { open: '06:00', close: '21:00' },
-  thursday: { open: '06:00', close: '21:00' },
-  friday: { open: '06:00', close: '21:00' },
-  saturday: { open: '06:00', close: '21:00' },
-  sunday: { open: '06:00', close: '21:00' }
-};
-
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+const DEFAULT_TIMING = { open: '06:00', close: '21:00', notes: '' };
+
+/** API list [{ dayOfWeek: 'MONDAY', openingTime, closingTime, specialNotes }] → { monday: { open, close, notes } } */
+const toTimingMap = (list) =>
+  DAYS.reduce((acc, day) => {
+    const row = (Array.isArray(list) ? list : []).find((r) => String(r.dayOfWeek).toLowerCase() === day);
+    acc[day] = row
+      ? { open: toInputTime(row.openingTime), close: toInputTime(row.closingTime), notes: row.specialNotes || '' }
+      : { ...DEFAULT_TIMING };
+    return acc;
+  }, {});
 
 export default function TimingsAdmin() {
   const { language } = useLanguage();
-  const { user, isAuthenticated } = useAuth();
+  const { isAdmin } = useAuth();
   const t = translations[language] || translations.en;
 
-  const [timings, setTimings] = useState(MOCK_TIMINGS);
-  const [originalTimings, setOriginalTimings] = useState(MOCK_TIMINGS);
+  const [timings, setTimings] = useState(() => toTimingMap([]));
+  const [originalTimings, setOriginalTimings] = useState(() => toTimingMap([]));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [hasChanges, setHasChanges] = useState(false);
+  const [notice, setNotice] = useState(null);
   const [saving, setSaving] = useState(false);
 
+  const hasChanges = JSON.stringify(timings) !== JSON.stringify(originalTimings);
+
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
+    if (isAdmin) {
       fetchTimings();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
 
   const fetchTimings = async () => {
     try {
       setLoading(true);
-      const data = await timingsAPI.getAll();
-      if (data) {
-        const timingsData = Array.isArray(data) ? data : data?.data || MOCK_TIMINGS;
-        setTimings(timingsData);
-        setOriginalTimings(timingsData);
-      }
+      const map = toTimingMap(await timingsAPI.getAll());
+      setTimings(map);
+      setOriginalTimings(map);
       setError(null);
     } catch (err) {
-      console.warn('Backend not available, using mock data:', err.message);
-      setTimings(MOCK_TIMINGS);
-      setOriginalTimings(MOCK_TIMINGS);
-      setError(null);
+      setError(err.message || t.error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleTimeChange = (day, field, value) => {
-    setTimings(prev => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        [field]: value
-      }
-    }));
-    setHasChanges(JSON.stringify(timings) !== JSON.stringify(originalTimings));
+    setNotice(null);
+    setTimings((prev) => ({ ...prev, [day]: { ...prev[day], [field]: value } }));
   };
 
   const handleSave = async () => {
+    const invalid = DAYS.find((day) => timings[day].open && timings[day].close && timings[day].open >= timings[day].close);
+    if (invalid) {
+      setError(`Closing time must be after opening time (${invalid}).`);
+      return;
+    }
+    const changedDays = DAYS.filter((day) => JSON.stringify(timings[day]) !== JSON.stringify(originalTimings[day]));
     try {
       setSaving(true);
-      for (const [day, timing] of Object.entries(timings)) {
-        // Ensure time values have seconds component (HH:mm:ss format)
-        const formattedTiming = {
-          open: timing.open ? (timing.open.split(':').length === 2 ? timing.open + ':00' : timing.open) : null,
-          close: timing.close ? (timing.close.split(':').length === 2 ? timing.close + ':00' : timing.close) : null
-        };
-        await timingsAPI.update(day, formattedTiming);
-      }
+      setError(null);
+      await Promise.all(
+        changedDays.map((day) =>
+          timingsAPI.update(day, {
+            openingTime: toApiTime(timings[day].open),
+            closingTime: toApiTime(timings[day].close),
+            specialNotes: timings[day].notes || null,
+          })
+        )
+      );
       setOriginalTimings(timings);
-      setHasChanges(false);
-      alert(t.success);
+      setNotice(t.success);
     } catch (err) {
-      setError(err.response?.data?.message || t.error);
-      alert(t.error + ': ' + (err.response?.data?.message || err.message));
+      setError(`${t.error}: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -160,17 +160,7 @@ export default function TimingsAdmin() {
 
   const handleCancel = () => {
     setTimings(originalTimings);
-    setHasChanges(false);
-  };
-
-  const formatTime = (value) => {
-    if (!value) return '';
-    const parts = value.split(':');
-    const hours = parseInt(parts[0]);
-    const minutes = parts[1] || '00';
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHour = hours % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
+    setError(null);
   };
 
   if (loading) {
@@ -182,7 +172,7 @@ export default function TimingsAdmin() {
   }
 
   // Check admin access
-  if (isAuthenticated && user?.role !== 'admin') {
+  if (!isAdmin) {
     return (
       <div style={{
         padding: '40px 20px',
@@ -234,6 +224,18 @@ export default function TimingsAdmin() {
             marginBottom: '20px'
           }}>
             {error}
+          </div>
+        )}
+
+        {notice && (
+          <div role="status" style={{
+            padding: '15px',
+            backgroundColor: '#e8f5e9',
+            color: '#2e7d32',
+            borderRadius: '4px',
+            marginBottom: '20px'
+          }}>
+            {notice}
           </div>
         )}
 

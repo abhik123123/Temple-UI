@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
+
+const SHIVA_IMAGES = [
+  '/images/shiva/shiva%20img1.webp',
+  '/images/shiva/shiva%20img%202.jpg',
+  '/images/shiva/shiva%20img3.jpg',
+  '/images/shiva/shiva%20img4.jpg',
+  '/images/shiva/shiva%20img5.webp',
+  '/images/shiva/shiva%20img%206.jpg',
+  '/images/shiva/shiva%20img%207.png'
+];
 
 export default function AdminHome() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { t } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const shivaImages = [
-    '/images/shiva/shiva%20img1.webp',
-    '/images/shiva/shiva%20img%202.jpg',
-    '/images/shiva/shiva%20img3.jpg',
-    '/images/shiva/shiva%20img4.jpg',
-    '/images/shiva/shiva%20img5.webp',
-    '/images/shiva/shiva%20img%206.jpg',
-    '/images/shiva/shiva%20img%207.png'
-  ];
+  const shivaImages = SHIVA_IMAGES;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -273,11 +273,11 @@ export default function AdminHome() {
             e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
           }}
-          onClick={() => navigate('/admin/dashboard')}
+          onClick={() => navigate('/donors')}
           >
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</div>
-            <h3 style={{ color: '#2c3e50', marginBottom: '0.5rem' }}>Dashboard</h3>
-            <p style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>View comprehensive admin statistics</p>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💰</div>
+            <h3 style={{ color: '#2c3e50', marginBottom: '0.5rem' }}>Donations</h3>
+            <p style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Record and review donations</p>
           </div>
         </div>
       </div>

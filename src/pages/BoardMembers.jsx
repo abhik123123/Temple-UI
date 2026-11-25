@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { boardMembersAPI } from '../services/boardMembersAPI';
+import { boardMembersAPI } from '../services/api';
+import { resolveAssetUrl } from '../services/httpClient';
 
 export default function BoardMembers() {
   const [boardMembers, setBoardMembers] = useState([]);
@@ -13,13 +14,12 @@ export default function BoardMembers() {
     const fetchBoardMembers = async () => {
       try {
         setLoading(true);
-        const response = await boardMembersAPI.getAll();
-        setBoardMembers(Array.isArray(response.data) ? response.data : response.data || []);
+        const data = await boardMembersAPI.getAll();
+        setBoardMembers(Array.isArray(data) ? data : []);
         setError(null);
       } catch (err) {
-        console.error('Error fetching board members:', err);
         setBoardMembers([]);
-        setError('Unable to load board members. Please ensure the backend is running.');
+        setError('Unable to load board members right now. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -30,7 +30,7 @@ export default function BoardMembers() {
 
   // Get unique departments
   const departments = boardMembers.length > 0
-    ? ['All', ...new Set(boardMembers.map(m => m.department))]
+    ? ['All', ...new Set(boardMembers.map(m => m.department).filter(Boolean))]
     : ['All'];
 
   // Filter members by department
@@ -151,7 +151,7 @@ export default function BoardMembers() {
                   justifyContent: 'center'
                 }}>
                   <img
-                    src={member.profileImageUrl}
+                    src={resolveAssetUrl(member.profileImageUrl)}
                     alt={member.fullName}
                     style={{
                       width: '100%',
@@ -278,7 +278,7 @@ export default function BoardMembers() {
             {/* Modal Content */}
             <div style={{ padding: '2rem' }}>
               <img
-                src={selectedMember.profileImageUrl}
+                src={resolveAssetUrl(selectedMember.profileImageUrl)}
                 alt={selectedMember.fullName}
                 style={{
                   width: '100%',

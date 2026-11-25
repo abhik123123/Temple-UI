@@ -3,8 +3,8 @@
  * Features: View subscribers, send test emails, view statistics
  */
 
-import React, { useState, useEffect } from 'react';
-import subscriptionAPI from '../services/subscriptionAPI';
+import React, { useCallback, useEffect, useState } from 'react';
+import { subscriptionAPI } from '../services/api';
 
 const SubscriptionAdmin = () => {
   const [stats, setStats] = useState({
@@ -20,12 +20,7 @@ const SubscriptionAdmin = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
 
-  // Load statistics and subscribers
-  useEffect(() => {
-    loadData();
-  }, [currentPage]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       // Load statistics
@@ -41,7 +36,11 @@ const SubscriptionAdmin = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, pageSize]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleSendTestEmail = async (e) => {
     e.preventDefault();

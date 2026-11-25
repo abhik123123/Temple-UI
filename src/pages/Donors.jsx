@@ -3,11 +3,13 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useAPI } from '../hooks/useAPI';
 import { donorsAPI } from '../services/api';
+import { formatDate, parseLocalDate, todayIso } from '../utils/format';
 
 export default function Donors() {
   const { t } = useLanguage();
-  const { isAuthenticated } = useAuth();
+  const { isAdmin: isAuthenticated } = useAuth();
   const { data: backendDonors, loading, error, refetch } = useAPI(donorsAPI.getAll);
+  // Note: the backend returns only public fields (name, type, amount, date, dedication) to anonymous visitors.
   const [showAddForm, setShowAddForm] = useState(false);
   const [filterMonth, setFilterMonth] = useState('');
   const [filterYear, setFilterYear] = useState('');
@@ -18,7 +20,7 @@ export default function Donors() {
     donorName: '',
     donationType: 'Cash',
     amount: '',
-    donationDate: new Date().toISOString().split('T')[0],
+    donationDate: todayIso(),
     inMemoryOf: '',
     donationReason: ''
   });
@@ -27,7 +29,8 @@ export default function Donors() {
 
   // Filter donations
   const filteredDonors = displayDonors.filter(donor => {
-    const donationDate = new Date(donor.donationDate);
+    const donationDate = parseLocalDate(donor.donationDate);
+    if (!donationDate) return false;
     const month = String(donationDate.getMonth() + 1).padStart(2, '0');
     const year = donationDate.getFullYear().toString();
 
@@ -43,7 +46,7 @@ export default function Donors() {
   const averageDonation = filteredDonors.length > 0 ? (totalDonations / filteredDonors.length).toFixed(2) : 0;
 
   // Get unique years and months for filters
-  const years = [...new Set(displayDonors.map(d => new Date(d.donationDate).getFullYear()))].sort((a, b) => b - a);
+  const years = [...new Set(displayDonors.map(d => parseLocalDate(d.donationDate)?.getFullYear()).filter(Boolean))].sort((a, b) => b - a);
   const months = Array.from({ length: 12 }, (_, i) => ({
     value: String(i + 1).padStart(2, '0'),
     label: new Date(2024, i).toLocaleString('en-US', { month: 'long' })
@@ -62,14 +65,14 @@ export default function Donors() {
         donorName: '',
         donationType: 'Cash',
         amount: '',
-        donationDate: new Date().toISOString().split('T')[0],
+        donationDate: todayIso(),
         inMemoryOf: '',
         donationReason: ''
       });
       setShowAddForm(false);
       refetch();
     } catch (err) {
-      setSubmitError(err.response?.data?.message || 'Failed to add donation');
+      setSubmitError(err.message || 'Failed to add donation');
     } finally {
       setSubmitLoading(false);
     }
@@ -82,7 +85,7 @@ export default function Donors() {
       await donorsAPI.delete(donorId);
       refetch();
     } catch (err) {
-      alert('Failed to delete donation: ' + (err.response?.data?.message || err.message));
+      setSubmitError('Failed to delete donation: ' + err.message);
     }
   };
 
@@ -130,6 +133,12 @@ export default function Donors() {
             </button>
           )}
         </div>
+
+        {submitError && !showAddForm && (
+          <div role="alert" style={{ background: '#ffe5e5', padding: '1rem', borderRadius: '4px', color: '#d32f2f', marginBottom: '1rem' }}>
+            ⚠️ {submitError}
+          </div>
+        )}
 
         {showAddForm && isAuthenticated && (
           <div style={{
@@ -360,11 +369,7 @@ export default function Donors() {
                 <tr key={donor.id || idx} style={{ borderBottom: '1px solid #eee' }}>
                   <td style={{ padding: '1rem', color: '#333' }}><strong>{donor.donorName}</strong></td>
                   <td style={{ padding: '1rem', color: '#666' }}>
-                    {new Date(donor.donationDate).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}
+                    {formatDate(donor.donationDate)}
                   </td>
                   <td style={{ padding: '1rem', color: '#666' }}>
                     <span style={{

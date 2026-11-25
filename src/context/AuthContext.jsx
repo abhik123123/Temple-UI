@@ -1,133 +1,103 @@
-import React, { createContext, useState, useCallback, useEffect } from 'react';
-import config from '../config/environment';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { authAPI } from '../services/api';
+import { AUTH_EXPIRED_EVENT } from '../services/httpClient';
+import { clearToken, decodeToken, getToken, isTokenExpired, setToken } from '../services/tokenStorage';
 
-export const AuthContext = createContext();
+export const AuthContext = createContext(null);
+
+/** Builds the UI user object from JWT claims issued by the backend. */
+const userFromToken = (token) => {
+  const claims = decodeToken(token);
+  if (!claims) return null;
+  const roles = Array.isArray(claims.roles) ? claims.roles : [];
+  return {
+    username: claims.sub,
+    name: claims.name || claims.sub,
+    roles,
+    role: roles.includes('ADMIN') ? 'admin' : 'user',
+  };
+};
+
+const restoreSession = () => {
+  const token = getToken();
+  if (!token || isTokenExpired(token)) {
+    clearToken();
+    return null;
+  }
+  return userFromToken(token);
+};
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(restoreSession);
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState(null);
 
-  // Restore token and auth state on mount
-  useEffect(() => {
-    if (config.useJWT) {
-      const savedToken = localStorage.getItem(config.tokenStorageKey);
-      if (savedToken) {
-        setToken(savedToken);
-        setIsAuthenticated(true);
-        setUser({ username: 'Authenticated', role: 'admin' });
-      }
-    }
-    // Don't auto-authenticate on mount - require explicit login
+  const logout = useCallback(() => {
+    clearToken();
+    setUser(null);
   }, []);
 
-  const login = useCallback(async (username, password) => {
-    // Local environment - validate credentials locally
-    if (!config.requireAuth && config.authType === 'basic') {
-      // Check if credentials match the default admin credentials
-      console.log('Login attempt:', { username, password, defaultUsername: config.defaultUsername, defaultPassword: config.defaultPassword });
-      if (username === config.defaultUsername && password === config.defaultPassword) {
-        console.log('Login SUCCESS');
-        setUser({ username, name: username?.split('@')[0] || 'admin', role: 'admin' });
-        setIsAuthenticated(true);
-        return { success: true, message: 'Login successful' };
-      } else {
-        console.log('Login FAILED - Invalid credentials');
-        return { success: false, message: 'Invalid credentials' };
-      }
-    }
+  // Backend rejected our token (expired, revoked, signing key rotated...).
+  useEffect(() => {
+    window.addEventListener(AUTH_EXPIRED_EVENT, logout);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, logout);
+  }, [logout]);
 
+  // Log out exactly when the token expires instead of waiting for a failed request.
+  useEffect(() => {
+    if (!user) return undefined;
+    const exp = decodeToken(getToken())?.exp;
+    if (!exp) return undefined;
+    const ms = exp * 1000 - Date.now();
+    if (ms <= 0) {
+      logout();
+      return undefined;
+    }
+    // setTimeout overflows above ~24.8 days; tokens are far shorter but guard anyway.
+    const timer = setTimeout(logout, Math.min(ms, 2 ** 31 - 1));
+    return () => clearTimeout(timer);
+  }, [user, logout]);
+
+  const login = useCallback(async (username, password) => {
     setLoading(true);
     try {
-      const response = await fetch(`${config.backendUrl}${config.loginEndpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (config.useJWT && data.token) {
-          // Store JWT token
-          localStorage.setItem(config.tokenStorageKey, data.token);
-          if (data.expiresIn) {
-            localStorage.setItem(config.tokenExpiryKey, Date.now() + data.expiresIn);
-          }
-          setToken(data.token);
-        }
-        
-        setUser({ 
-          username: data.username || username, 
-          name: data.name || username, 
-          role: 'admin' 
-        });
-        setIsAuthenticated(true);
-        return { success: true, message: 'Login successful' };
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        return { 
-          success: false, 
-          message: errorData.message || 'Invalid credentials' 
-        };
+      const { token } = await authAPI.login({ username: username.trim(), password });
+      const nextUser = userFromToken(token);
+      if (!nextUser) {
+        return { success: false, message: 'Unexpected response from server.' };
       }
+      setToken(token);
+      setUser(nextUser);
+      return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, message: error.message };
+      const message =
+        error.status === 401
+          ? 'Invalid username or password.'
+          : error.status === 429
+          ? 'Too many login attempts. Please wait a few minutes and try again.'
+          : error.message;
+      return { success: false, message };
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(config.tokenStorageKey);
-    localStorage.removeItem(config.tokenExpiryKey);
-    setToken(null);
-    setUser(null);
-    setIsAuthenticated(false);
-  }, []);
-
-  const getAuthHeader = useCallback(() => {
-    if (config.useJWT && token) {
-      return { 'Authorization': `Bearer ${token}` };
-    } else if (config.authType === 'basic') {
-      // For local dev - can be used if needed
-      const credentials = btoa(`${config.defaultUsername}:${config.defaultPassword}`);
-      return { 'Authorization': `Basic ${credentials}` };
-    }
-    return {};
-  }, [token]);
-
-  const isTokenValid = useCallback(() => {
-    if (!config.useJWT) return true;
-    const expiry = localStorage.getItem(config.tokenExpiryKey);
-    if (!expiry) return !!token;
-    return Date.now() < parseInt(expiry);
-  }, [token]);
-
-  const value = {
-    user,
-    isAuthenticated,
-    loading,
-    token,
-    login,
-    logout,
-    getAuthHeader,
-    isTokenValid,
-    requireAuth: config.requireAuth,
-    useJWT: config.useJWT,
-    authType: config.authType,
-    environment: config.env,
-    backendUrl: config.backendUrl,
-    description: config.description
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated: Boolean(user),
+      isAdmin: user?.role === 'admin',
+      loading,
+      login,
+      logout,
+    }),
+    [user, loading, login, logout]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  const context = React.useContext(AuthContext);
+  const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within AuthProvider');
   }

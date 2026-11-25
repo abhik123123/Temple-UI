@@ -1,35 +1,20 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * Guards admin screens. This is a UX convenience only — the backend enforces
+ * authorization on every write endpoint regardless of what the UI shows.
+ */
 export default function ProtectedRoute({ children, requireAdmin = false }) {
-  const { isAuthenticated, user, requireAuth } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
+  const location = useLocation();
 
-  // If this is an admin route (requireAdmin = true), enforce authentication and admin role
-  if (requireAdmin) {
-    // Admin routes always require authentication
-    if (!isAuthenticated) {
-      return <Navigate to="/login" replace />;
-    }
-    // Check if user has admin role
-    if (user?.role !== 'admin') {
-      return <Navigate to="/" replace />;
-    }
-    // User is authenticated and is admin
-    return children;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
-
-  // For non-admin routes:
-  // If authentication is not required (local environment), allow access
-  if (!requireAuth) {
-    return children;
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/home" replace />;
   }
-
-  // If authentication is required and user is authenticated, allow access
-  if (isAuthenticated) {
-    return children;
-  }
-
-  // Otherwise, redirect to login
-  return <Navigate to="/login" replace />;
+  return children;
 }

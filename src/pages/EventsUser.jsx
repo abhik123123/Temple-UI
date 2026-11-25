@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
-import { eventsAPI } from '../services/templeAPI';
+import { eventsAPI } from '../services/api';
+import { resolveAssetUrl } from '../services/httpClient';
+import { formatDate, formatTime } from '../utils/format';
+import EventRegistrationModal from '../components/EventRegistrationModal';
 
 const translations = {
   en: {
@@ -54,74 +56,9 @@ const translations = {
   }
 };
 
-// Mock data for when backend is not available
-const MOCK_EVENTS = [
-  {
-    id: 1,
-    title: 'Diwali Celebration',
-    date: '2025-11-15',
-    time: '18:00',
-    endTime: '22:00',
-    location: 'Temple Main Hall',
-    description: 'Join us for a spectacular Diwali celebration with traditional rituals, prayers, and community gathering. Light lamps, celebrate with family, and enjoy the festive atmosphere.',
-    category: 'Festival'
-  },
-  {
-    id: 2,
-    title: 'Lord Shiva Puja',
-    date: '2025-12-01',
-    time: '06:00',
-    endTime: '08:00',
-    location: 'Inner Sanctum',
-    description: 'Special prayer ceremony dedicated to Lord Shiva. Participate in the holy rituals and receive blessings from the priests.',
-    category: 'Religious'
-  },
-  {
-    id: 3,
-    title: 'Bhajan Singing Session',
-    date: '2025-12-10',
-    time: '19:00',
-    endTime: '21:00',
-    location: 'Temple Auditorium',
-    description: 'Experience the divine music of bhajans. Community singing session with traditional and modern devotional songs.',
-    category: 'Cultural'
-  },
-  {
-    id: 4,
-    title: 'Temple Foundation Day',
-    date: '2025-12-20',
-    time: '10:00',
-    endTime: '17:00',
-    location: 'Temple Grounds',
-    description: 'Celebrate our temple\'s foundation day with special ceremonies, cultural programs, and community feast.',
-    category: 'Celebration'
-  },
-  {
-    id: 5,
-    title: 'Yoga and Meditation',
-    date: '2025-12-25',
-    time: '07:00',
-    endTime: '09:00',
-    location: 'Meditation Hall',
-    description: 'Join our wellness program featuring yoga and meditation sessions to rejuvenate your body and mind.',
-    category: 'Community'
-  },
-  {
-    id: 6,
-    title: 'New Year Blessings',
-    date: '2026-01-01',
-    time: '00:00',
-    endTime: '05:00',
-    location: 'Temple Main Hall',
-    description: 'Welcome the new year with special prayers and blessings. Seek divine grace for prosperity and good health.',
-    category: 'Festival'
-  }
-];
-
 
 export default function EventsUser() {
   const { language } = useLanguage();
-  const { user } = useAuth();
   const t = translations[language] || translations.en;
 
   const [events, setEvents] = useState([]);
@@ -130,6 +67,7 @@ export default function EventsUser() {
   const [registeredEvents, setRegisteredEvents] = useState(new Set());
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [registeringEvent, setRegisteringEvent] = useState(null);
 
   useEffect(() => {
     fetchEvents();
@@ -138,51 +76,24 @@ export default function EventsUser() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const data = await eventsAPI.getAll();
-      setEvents(Array.isArray(data) ? data : data?.data || []);
+      const data = await eventsAPI.getAll({ upcoming: true });
+      setEvents((Array.isArray(data) ? data : []).map((event) => ({ ...event, imageUrl: resolveAssetUrl(event.imageUrl) })));
       setError(null);
     } catch (err) {
-      // Use mock data if backend is not available
-      console.warn('Backend not available, using mock data:', err.message);
-      setEvents(MOCK_EVENTS);
-      setError(null);
+      setError(err.message || 'Unable to load events right now.');
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const handleRegister = (event) => {
+    if (registeredEvents.has(event.id)) return;
+    setShowModal(false);
+    setRegisteringEvent(event);
   };
 
-  const formatTime = (timeString) => {
-    if (!timeString) return '';
-    const parts = timeString.split(':');
-    const hours = parseInt(parts[0]);
-    const minutes = parts[1] || '00';
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHour = hours % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
-  const handleRegister = async (event) => {
-    try {
-      // Toggle registration status (mock)
-      setRegisteredEvents(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(event.id)) {
-          newSet.delete(event.id);
-        } else {
-          newSet.add(event.id);
-        }
-        return newSet;
-      });
-      alert(t.registerSuccess);
-    } catch (err) {
-      alert(t.registerError);
-    }
+  const handleRegistered = (eventId) => {
+    setRegisteredEvents((prev) => new Set(prev).add(eventId));
   };
 
   const handleViewDetails = (event) => {
@@ -274,7 +185,7 @@ export default function EventsUser() {
                   color: 'white'
                 }}>
                   <h3 style={{ margin: '0 0 10px 0', fontSize: '1.3rem' }}>
-                    {event.title || event.eventName}
+                    {event.title}
                   </h3>
                   <div style={{ fontSize: '12px', opacity: 0.9 }}>
                     {event.category || 'Event'}
@@ -289,7 +200,7 @@ export default function EventsUser() {
                     <div>
                       <div style={{ fontSize: '12px', color: '#999' }}>{t.date}</div>
                       <div style={{ fontSize: '14px', color: '#333', fontWeight: '500' }}>
-                        {formatDate(event.date || event.eventDate)}
+                        {formatDate(event.eventDate)}
                       </div>
                     </div>
                   </div>
@@ -300,7 +211,7 @@ export default function EventsUser() {
                     <div>
                       <div style={{ fontSize: '12px', color: '#999' }}>{t.time}</div>
                       <div style={{ fontSize: '14px', color: '#333', fontWeight: '500' }}>
-                        {formatTime(event.time || event.startTime)}
+                        {formatTime(event.startTime)}
                         {event.endTime && ` - ${formatTime(event.endTime)}`}
                       </div>
                     </div>
@@ -399,7 +310,7 @@ export default function EventsUser() {
               overflowY: 'auto'
             }}>
               <h2 style={{ color: '#0B1C3F', marginBottom: '20px' }}>
-                {selectedEvent.title || selectedEvent.eventName}
+                {selectedEvent.title}
               </h2>
 
               <div style={{ marginBottom: '20px', lineHeight: '1.6', color: '#666' }}>
@@ -419,13 +330,13 @@ export default function EventsUser() {
                 <div>
                   <div style={{ fontSize: '12px', color: '#999' }}>{t.date}</div>
                   <div style={{ fontSize: '14px', fontWeight: '500', color: '#333' }}>
-                    {formatDate(selectedEvent.date || selectedEvent.eventDate)}
+                    {formatDate(selectedEvent.eventDate)}
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: '#999' }}>{t.time}</div>
                   <div style={{ fontSize: '14px', fontWeight: '500', color: '#333' }}>
-                    {formatTime(selectedEvent.time || selectedEvent.startTime)}
+                    {formatTime(selectedEvent.startTime)}
                   </div>
                 </div>
                 <div>
@@ -487,6 +398,13 @@ export default function EventsUser() {
           </div>
         )}
       </div>
+      {registeringEvent && (
+        <EventRegistrationModal
+          event={registeringEvent}
+          onClose={() => setRegisteringEvent(null)}
+          onSuccess={() => handleRegistered(registeringEvent.id)}
+        />
+      )}
     </div>
   );
 }

@@ -6,57 +6,6 @@ export default function Services() {
   const { t } = useLanguage();
   const { data: backendServices, loading, error } = useAPI(servicesAPI.getAll);
 
-  // Fallback mock data
-  const mockServices = [
-    {
-      id: 1,
-      name: 'Daily Pujas',
-      price: 'Free',
-      description: 'Participate in our daily morning and evening prayer services.',
-      details: ['Morning Prayers at 5:00 AM', 'Evening Prayers at 7:00 PM', 'Guided meditation'],
-      icon: '🙏'
-    },
-    {
-      id: 2,
-      name: 'Special Prayers',
-      price: '₹500 - ₹2000',
-      description: 'Customized prayer ceremonies for special occasions and personal intentions.',
-      details: ['Family blessings', 'Health & wellness prayers', 'Success rituals'],
-      icon: '✨'
-    },
-    {
-      id: 3,
-      name: 'Spiritual Counseling',
-      price: '₹1000/session',
-      description: 'One-on-one guidance from our experienced spiritual advisors.',
-      details: ['Personal consultation', 'Life guidance', 'Spiritual development'],
-      icon: '📖'
-    },
-    {
-      id: 4,
-      name: 'Wedding Ceremonies',
-      price: '₹5000 - ₹15000',
-      description: 'Complete wedding planning and sacred ceremony arrangements.',
-      details: ['Venue decoration', 'Priest coordination', 'Ritual planning'],
-      icon: '💒'
-    },
-    {
-      id: 5,
-      name: 'Yoga & Meditation',
-      price: '₹2000/month',
-      description: 'Regular classes for physical and mental wellness.',
-      details: ['Morning yoga classes', 'Evening meditation', 'Breathing techniques'],
-      icon: '🧘'
-    },
-    {
-      id: 6,
-      name: 'Temple Tours',
-      price: '₹200/person',
-      description: 'Guided tours explaining the temple history and architecture.',
-      details: ['Heritage tour', 'Historical insights', 'Photography allowed'],
-      icon: '🏛️'
-    }
-  ];
 
   const displayServices = loading
     ? []

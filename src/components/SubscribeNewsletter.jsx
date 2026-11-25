@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import subscriptionAPI from '../services/subscriptionAPI';
+import { subscriptionAPI } from '../services/api';
 
 const SubscribeNewsletter = ({ isDarkMode = false }) => {
   const [email, setEmail] = useState('');

@@ -4,12 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Navigation() {
-  const { user, logout, requireAuth } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const { language, changeLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAdminPage = location.pathname.includes('/admin') || location.pathname.includes('/home/admin');
+  const isAdminPage = isAdmin && /(^|\/)admin(\/|$)/.test(location.pathname);
 
   const handleLogout = () => {
     logout();
@@ -27,14 +27,15 @@ export default function Navigation() {
           <li><Link to={isAdminPage ? "/staff/admin" : "/staff"}>🧑‍💼 Staff</Link></li>
           <li><Link to={isAdminPage ? "/timings/admin" : "/timings"}>{t('nav_timings')}</Link></li>
           <li><Link to={isAdminPage ? "/board-members/admin" : "/board-members"}>👥 Board</Link></li>
-          {user?.role === 'admin' && !isAdminPage && <li><Link to="/events/admin">📅 Events Manager</Link></li>}
-          {user?.role === 'admin' && !isAdminPage && <li><Link to="/subscriptions/admin">📧 Newsletter</Link></li>}
-          {user?.role === 'admin' && !isAdminPage && <li><Link to="/admin/dashboard">⚙️ Admin Dashboard</Link></li>}
+          {isAdmin && !isAdminPage && <li><Link to="/events/admin">📅 Events Manager</Link></li>}
+          {isAdmin && !isAdminPage && <li><Link to="/subscriptions/admin">📧 Newsletter</Link></li>}
+          {isAdmin && !isAdminPage && <li><Link to="/home/admin">⚙️ Admin</Link></li>}
         </ul>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {/* Language Selector */}
-          <select 
-            value={language} 
+          <select
+            aria-label="Language"
+            value={language}
             onChange={(e) => changeLanguage(e.target.value)}
             style={{
               background: 'rgba(230, 179, 37, 0.15)',
@@ -58,6 +59,7 @@ export default function Navigation() {
                 👤 {user.name || user.email}
               </span>
               <button
+                type="button"
                 onClick={handleLogout}
                 style={{
                   background: 'rgba(230, 179, 37, 0.15)',
@@ -83,14 +85,6 @@ export default function Navigation() {
               </button>
             </>
           )}
-          {requireAuth && !user && (
-            <Link to="/login" style={{ color: '#E6B325', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.95rem' }}>
-              Login
-            </Link>
-          )}
-          <span style={{ color: '#b0c4de', fontSize: '0.8rem', opacity: 0.8, marginLeft: '1rem' }}>
-            Env: {requireAuth ? 'AUTH' : 'NO-AUTH'}
-          </span>
         </div>
       </div>
     </nav>

@@ -1,5 +1,5 @@
 {
-  "name": "temple-react",
+  "name": "temple-ui",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
@@ -14,12 +14,11 @@
     "unique-string": "^3.0.0"
   },
   "scripts": {
-    "start": "cross-env REACT_APP_ENV=local react-scripts start",
-    "start:dev": "cross-env REACT_APP_ENV=dev react-scripts start",
-    "start:uat": "cross-env REACT_APP_ENV=uat react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "test:ci": "react-scripts test --watchAll=false --ci",
+    "lint": "eslint --max-warnings=0 src"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -42,5 +41,15 @@
     "@testing-library/user-event": "^14.5.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0"
+  },
+  "description": "Raja Rajeshwara Devastanam temple website (React SPA)",
+  "engines": {
+    "node": ">=18"
+  },
+  "proxy": "http://localhost:8080",
+  "jest": {
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    }
   }
 }
