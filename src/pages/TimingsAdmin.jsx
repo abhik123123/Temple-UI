@@ -80,7 +80,7 @@ const translations = {
 };
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const EMPTY_SESSION = { dayOfWeek: 'Monday', openingTime: '06:00', closingTime: '21:00', specialNotes: '' };
+const EMPTY_SESSION = { dayOfWeek: 'Monday', openingTime: '18:00', closingTime: '21:00', specialNotes: '' };
 
 const cell = { padding: '8px', borderBottom: '1px solid #eee', verticalAlign: 'middle' };
 const input = { padding: '6px 8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '14px' };
@@ -180,6 +180,13 @@ export default function TimingsAdmin() {
     return run(row.id, () => timingsAPI.delete(row.id), t.success);
   };
 
+  const startSessionFor = (day) => {
+    setNewSession({ ...EMPTY_SESSION, dayOfWeek: day });
+    setNotice(null);
+    document.getElementById('new-session-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => document.getElementById('new-session-open')?.focus(), 300);
+  };
+
   const addSession = (e) => {
     e.preventDefault();
     const problem = validate(newSession);
@@ -236,7 +243,12 @@ export default function TimingsAdmin() {
                   return (
                     <tr key={day}>
                       <td style={cell}><strong>{t[day.toLowerCase()] || day}</strong></td>
-                      <td style={{ ...cell, color: '#999' }} colSpan={4}>{t.noSessions}</td>
+                      <td style={{ ...cell, color: '#999' }} colSpan={3}>{t.noSessions}</td>
+                      <td style={cell}>
+                        <button type="button" style={button('#3d6b2c')} onClick={() => startSessionFor(day)}>
+                          + {t.addSession}
+                        </button>
+                      </td>
                     </tr>
                   );
                 }
@@ -244,7 +256,19 @@ export default function TimingsAdmin() {
                   const form = edits[row.id] || toForm(row);
                   return (
                     <tr key={row.id}>
-                      <td style={cell}>{i === 0 && <strong>{t[day.toLowerCase()] || day}</strong>}</td>
+                      <td style={cell}>
+                        {i === 0 && (
+                          <>
+                            <strong>{t[day.toLowerCase()] || day}</strong>
+                            <div>
+                              <button type="button" onClick={() => startSessionFor(day)}
+                                style={{ background: 'none', border: 'none', padding: 0, marginTop: 4, color: '#3d6b2c', cursor: 'pointer', font: 'inherit', fontSize: 13, textDecoration: 'underline' }}>
+                                + {t.addSession}
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </td>
                       <td style={cell}>
                         <input type="time" aria-label={`${day} ${t.opening}`} style={input} value={form.openingTime}
                           onChange={(e) => changeRow(row.id, 'openingTime', e.target.value)} />
@@ -279,7 +303,7 @@ export default function TimingsAdmin() {
         </div>
       )}
 
-      <form onSubmit={addSession} style={{ marginTop: '24px', padding: '16px', backgroundColor: '#fbf1dc', borderRadius: '8px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+      <form id="new-session-form" onSubmit={addSession} style={{ marginTop: '24px', padding: '16px', backgroundColor: '#fbf1dc', borderRadius: '8px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <label>
           <div style={{ fontWeight: 500, marginBottom: '4px' }}>{t.day}</div>
           <select style={input} value={newSession.dayOfWeek}
@@ -289,7 +313,7 @@ export default function TimingsAdmin() {
         </label>
         <label>
           <div style={{ fontWeight: 500, marginBottom: '4px' }}>{t.opening}</div>
-          <input type="time" required style={input} value={newSession.openingTime}
+          <input id="new-session-open" type="time" required style={input} value={newSession.openingTime}
             onChange={(e) => setNewSession((s) => ({ ...s, openingTime: e.target.value }))} />
         </label>
         <label>
