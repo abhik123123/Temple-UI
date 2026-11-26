@@ -27,7 +27,7 @@ const toApiError = (error) => {
     const timedOut = error.code === 'ECONNABORTED';
     return new ApiError(
       timedOut
-        ? 'The server took too long to respond. Please try again.'
+        ? 'The temple server is taking longer than usual to respond. Please try again in a minute.'
         : 'Unable to reach the server. Please check your connection and try again.',
       { status: 0, cause: error }
     );
@@ -63,9 +63,29 @@ httpClient.interceptors.request.use((request) => {
   return request;
 });
 
+const RETRYABLE_STATUS = new Set([502, 503, 504]);
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * GETs only (safe to repeat): retry while the backend is starting up, i.e. no
+ * response at all, a timeout, or a gateway error from the host's proxy.
+ * Writes are never retried, so a registration can't be submitted twice.
+ */
+export const shouldRetry = (error, attempt, maxRetries = config.readRetries) => {
+  const method = (error.config?.method || 'get').toLowerCase();
+  if (method !== 'get' || axios.isCancel(error) || attempt >= maxRetries) return false;
+  return !error.response || RETRYABLE_STATUS.has(error.response.status);
+};
+
 httpClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const attempt = error.config?.__retryCount || 0;
+    if (error.config && shouldRetry(error, attempt)) {
+      error.config.__retryCount = attempt + 1;
+      await sleep(Math.min(2000 * 2 ** attempt, 10000));
+      return httpClient.request(error.config);
+    }
     const hadToken = Boolean(error.config?.headers?.Authorization);
     if (error.response?.status === 401 && hadToken) {
       window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));

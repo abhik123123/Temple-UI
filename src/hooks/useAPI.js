@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { timingsAPI } from '../services/api';
 
+const SLOW_AFTER_MS = 5000;
+
 /**
  * Generic data-fetching hook.
  *
@@ -15,6 +17,7 @@ export function useAPI(fetcher, { initialData = [], enabled = true } = {}) {
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState(null);
+  const [slow, setSlow] = useState(false);
   const requestId = useRef(0);
   const mounted = useRef(true);
 
@@ -52,13 +55,23 @@ export function useAPI(fetcher, { initialData = [], enabled = true } = {}) {
     if (enabled) refetch();
   }, [enabled, refetch]);
 
-  return { data, loading, error, refetch };
+  // After a few seconds of waiting, let the page explain that the server is waking up.
+  useEffect(() => {
+    if (!loading) {
+      setSlow(false);
+      return undefined;
+    }
+    const timer = setTimeout(() => setSlow(true), SLOW_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  return { data, loading, error, slow, refetch };
 }
 
 /** Weekly opening hours, ordered Monday → Sunday. */
 export function useTempleTimings() {
-  const { data, loading, error, refetch } = useAPI(timingsAPI.getAll);
-  return { timings: Array.isArray(data) ? data : [], loading, error, refetch };
+  const { data, loading, error, slow, refetch } = useAPI(timingsAPI.getAll);
+  return { timings: Array.isArray(data) ? data : [], loading, error, slow, refetch };
 }
 
 export default useAPI;

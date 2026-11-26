@@ -10,7 +10,7 @@ const templeToday = () =>
 
 export default function Timings() {
   const { t } = useLanguage();
-  const { timings: backendTimings, loading, error } = useTempleTimings();
+  const { timings: backendTimings, loading, error, slow, refetch } = useTempleTimings();
 
   const displayTimings = loading ? [] : backendTimings;
 
@@ -22,17 +22,18 @@ export default function Timings() {
         <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#a3171c' }}>{t('timings_daily')}</h2>
         
         {loading && (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
-            {t('timings_loading')}
+          <div role="status" style={{ textAlign: 'center', padding: '2rem', color: '#6b4a3a' }}>
+            {slow ? t('server_waking') : t('timings_loading')}
           </div>
         )}
 
-        {error && (
-          <div style={{ background: '#ffe5e5', padding: '1rem', borderRadius: '4px', color: '#d32f2f', marginBottom: '2rem' }}>
-            ⚠️ {error}
+        {error && !loading && (
+          <div role="alert" style={{ background: '#fbeaea', padding: '1rem 1.25rem', borderRadius: '6px', color: '#7a1013', marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <span>{t('timings_unavailable')}</span>
+            <button type="button" className="btn" style={{ marginTop: 0 }} onClick={refetch}>{t('try_again')}</button>
           </div>
         )}
-        
+
         <div className="table-container">
           <table className="darshan-table">
             <thead>
@@ -68,10 +69,10 @@ export default function Timings() {
                   </tr>
                 );
               })}
-              {(!loading && displayTimings.length === 0) && (
+              {(!loading && !error && displayTimings.length === 0) && (
                 <tr>
                   <td colSpan="3" style={{ textAlign: 'center', padding: '1rem' }}>
-                    {error ? t('timings_unavailable') : t('timings_none')}
+                    {t('timings_none')}
                   </td>
                 </tr>
               )}

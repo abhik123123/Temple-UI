@@ -19,8 +19,14 @@ const config = Object.freeze({
    */
   apiBaseUrl: trimTrailingSlash(process.env.REACT_APP_API_URL || '/api'),
 
-  /** Request timeout in milliseconds. */
-  requestTimeoutMs: Number(process.env.REACT_APP_API_TIMEOUT_MS) || 15000,
+  /**
+   * Request timeout in milliseconds. Generous because the free hosting tier
+   * puts the backend to sleep and the first request has to wake it (~1 min).
+   */
+  requestTimeoutMs: Number(process.env.REACT_APP_API_TIMEOUT_MS) || 70000,
+
+  /** Read requests (GET) that fail while the server is waking are retried this many times. */
+  readRetries: Number(process.env.REACT_APP_API_READ_RETRIES ?? 3),
 
   isProduction: process.env.NODE_ENV === 'production',
 

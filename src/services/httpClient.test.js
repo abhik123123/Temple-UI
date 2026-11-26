@@ -30,8 +30,9 @@ describe('httpClient', () => {
   });
 
   it('reports network failures with a friendly message', async () => {
+    // POST: writes are never retried, so this fails straight away.
     const err = await httpClient
-      .get('/x', { adapter: (config) => Promise.reject(Object.assign(new Error('Network Error'), { config })) })
+      .post('/x', {}, { adapter: (config) => Promise.reject(Object.assign(new Error('Network Error'), { config })) })
       .catch((e) => e);
     expect(err.status).toBe(0);
     expect(err.message).toMatch(/unable to reach the server/i);
@@ -66,5 +67,24 @@ describe('resolveAssetUrl', () => {
   it('returns null for empty input', () => {
     expect(resolveAssetUrl('')).toBeNull();
     expect(resolveAssetUrl(undefined)).toBeNull();
+  });
+});
+
+describe('shouldRetry', () => {
+  // eslint-disable-next-line global-require
+  const { shouldRetry } = require('./httpClient');
+  const err = (method, status) => ({ config: { method }, response: status ? { status } : undefined });
+
+  test('retries GETs while the server is unreachable or starting', () => {
+    expect(shouldRetry(err('get'), 0, 3)).toBe(true);
+    expect(shouldRetry(err('get', 503), 0, 3)).toBe(true);
+    expect(shouldRetry(err('get', 502), 2, 3)).toBe(true);
+  });
+
+  test('never retries writes, real errors, or past the limit', () => {
+    expect(shouldRetry(err('post'), 0, 3)).toBe(false);
+    expect(shouldRetry(err('get', 404), 0, 3)).toBe(false);
+    expect(shouldRetry(err('get', 500), 0, 3)).toBe(false);
+    expect(shouldRetry(err('get'), 3, 3)).toBe(false);
   });
 });

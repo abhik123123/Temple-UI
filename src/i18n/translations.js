@@ -1,5 +1,7 @@
 export const translations = {
   en: {
+    server_waking: "The temple server is waking up after a quiet spell. This can take up to a minute…",
+    try_again: "Try again",
     day_Monday: 'Monday',
     day_Tuesday: 'Tuesday',
     day_Wednesday: 'Wednesday',
@@ -123,6 +125,8 @@ export const translations = {
   },
   
   te: {
+    server_waking: "దేవాలయ సర్వర్ ప్రారంభమవుతోంది. దీనికి ఒక నిమిషం వరకు పట్టవచ్చు…",
+    try_again: "మళ్లీ ప్రయత్నించండి",
     day_Monday: 'సోమవారం',
     day_Tuesday: 'మంగళవారం',
     day_Wednesday: 'బుధవారం',
@@ -246,6 +250,8 @@ export const translations = {
   },
   
   hi: {
+    server_waking: "मंदिर का सर्वर शुरू हो रहा है। इसमें एक मिनट तक लग सकता है…",
+    try_again: "फिर से प्रयास करें",
     day_Monday: 'सोमवार',
     day_Tuesday: 'मंगलवार',
     day_Wednesday: 'बुधवार',

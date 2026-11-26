@@ -49,7 +49,7 @@ const templeWeekday = () =>
 
 function DarshanToday() {
   const { t } = useLanguage();
-  const { timings, loading, error } = useTempleTimings();
+  const { timings, loading, error, slow } = useTempleTimings();
   const today = templeWeekday();
   const sessions = useMemo(
     () => timings.filter((t) => String(t.dayOfWeek).toLowerCase() === today.toLowerCase()),
@@ -57,7 +57,7 @@ function DarshanToday() {
   );
 
   let body;
-  if (loading) body = <span>{t('today_checking')}</span>;
+  if (loading) body = <span>{slow ? t('server_waking') : t('today_checking')}</span>;
   else if (error) body = <span>{t('today_unavailable')}</span>;
   else if (sessions.length === 0) body = <span>{t('today_closed')}</span>;
   else {
