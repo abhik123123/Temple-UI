@@ -1,6 +1,7 @@
 import { useLanguage } from '../context/LanguageContext';
 import { useAPI } from '../hooks/useAPI';
 import { servicesAPI } from '../services/api';
+import { PageHero } from '../components/Ornaments';
 
 export default function Services() {
   const { t } = useLanguage();
@@ -25,26 +26,7 @@ export default function Services() {
 
   return (
     <div className="page">
-      <div className="hero" style={{
-        backgroundImage: 'url(/images/temple-images/saibaba.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        position: 'relative'
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)'
-        }}></div>
-        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'white' }}>{t('services_title')}</h1>
-          <p style={{ color: '#f7e8c8' }}>{t('services_description')}</p>
-        </div>
-      </div>
+      <PageHero title={t('services_title')} subtitle={t('services_description')} image="/images/hero/sky-statue.jpg" position="center 30%" />
 
       <div className="container">
         <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#a3171c' }}>{t('services_title')}</h2>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { staffAPI } from '../services/api';
 import { resolveAssetUrl } from '../services/httpClient';
+import { PageHero } from '../components/Ornaments';
 
 const initials = (name = '') =>
   name.replace(/^(Sri|Smt|Dr|Priest)\.?\s+/i, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
@@ -42,19 +43,7 @@ export default function Staff() {
 
   return (
     <div className="page">
-      <div className="hero" style={{
-        backgroundImage: 'url(/images/temple-images/temple-main.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        position: 'relative'
-      }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
-        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'white', fontSize: '2.2rem' }}>Priests and Staff</h1>
-          <p style={{ color: '#f7e8c8' }}>All temple personnel, grouped by department</p>
-        </div>
-      </div>
+      <PageHero title={'Priests and Staff'} subtitle={'The archakas and staff who serve at the temple'} image="/images/hero/kailash.jpg" position="center 40%" />
 
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>

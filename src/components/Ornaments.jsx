@@ -80,3 +80,24 @@ export function SectionTitle({ title, children }) {
 export function Kaavi() {
   return <div className="kaavi" aria-hidden="true" />;
 }
+
+/**
+ * Header band for inner pages: a sharp photo under a maroon wash, with the
+ * gopuram drawing on the right. Images live in /public/images/hero.
+ */
+export function PageHero({ title, subtitle, image, position = 'center 30%' }) {
+  return (
+    <section className="page-hero">
+      {image && (
+        <div className="page-hero__img" style={{ backgroundImage: `url(${image})`, backgroundPosition: position }} aria-hidden="true" />
+      )}
+      <div className="page-hero__inner">
+        <div>
+          <h1>{title}</h1>
+          {subtitle && <p>{subtitle}</p>}
+        </div>
+        <Gopuram className="page-hero__gopuram" />
+      </div>
+    </section>
+  );
+}

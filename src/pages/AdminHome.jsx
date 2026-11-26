@@ -3,13 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const SHIVA_IMAGES = [
-  '/images/shiva/shiva%20img1.webp',
-  '/images/shiva/shiva%20img%202.jpg',
-  '/images/shiva/shiva%20img3.jpg',
-  '/images/shiva/shiva%20img4.jpg',
-  '/images/shiva/shiva%20img5.webp',
-  '/images/shiva/shiva%20img%206.jpg',
-  '/images/shiva/shiva%20img%207.png'
+  '/images/hero/sunset-meditation.jpg',
+  '/images/hero/sky-statue.jpg',
+  '/images/hero/kailash.jpg',
+  '/images/hero/cosmic.jpg',
 ];
 
 export default function AdminHome() {

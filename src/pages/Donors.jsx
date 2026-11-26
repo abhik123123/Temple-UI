@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAPI } from '../hooks/useAPI';
 import { donorsAPI } from '../services/api';
 import { formatDate, parseLocalDate, todayIso } from '../utils/format';
+import { PageHero } from '../components/Ornaments';
 
 export default function Donors() {
   const { t } = useLanguage();
@@ -99,26 +100,7 @@ export default function Donors() {
 
   return (
     <div className="page">
-      <div className="hero" style={{
-        backgroundImage: 'url(/images/temple-images/saibaba.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        position: 'relative'
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)'
-        }}></div>
-        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'white' }}>{t('donors_title') || 'Donors'}</h1>
-          <p style={{ color: '#f7e8c8' }}>{t('donors_subtitle') || 'Support Our Temple'}</p>
-        </div>
-      </div>
+      <PageHero title={t('donors_title')} subtitle={t('donors_subtitle')} image="/images/hero/cosmic.jpg" position="right center" />
 
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>

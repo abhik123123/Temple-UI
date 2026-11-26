@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { boardMembersAPI } from '../services/api';
 import { resolveAssetUrl } from '../services/httpClient';
+import { PageHero } from '../components/Ornaments';
 
 export default function BoardMembers() {
   const [boardMembers, setBoardMembers] = useState([]);
@@ -41,26 +42,7 @@ export default function BoardMembers() {
   return (
     <div className="page">
       {/* Hero Section */}
-      <div className="hero" style={{
-        backgroundImage: 'url(/images/temple-images/temple-main.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        position: 'relative'
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)'
-        }}></div>
-        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'white', fontSize: '2.5rem' }}>Trust Board</h1>
-          <p style={{ color: '#f7e8c8', fontSize: '1.1rem' }}>Meet our temple leadership team</p>
-        </div>
-      </div>
+      <PageHero title={'Trust Board'} subtitle={'Meet the trustees who look after the temple'} image="/images/hero/sky-statue.jpg" position="center 35%" />
 
       <div className="container">
         <div style={{ marginBottom: '2rem' }}>
