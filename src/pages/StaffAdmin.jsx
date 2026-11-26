@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { staffAPI } from '../services/api';
+import { resolveAssetUrl } from '../services/httpClient';
+import { prepareImage } from '../utils/image';
+
+const DEPARTMENTS = ['Religious', 'Operations', 'Community', 'Finance', 'Administration'];
+
+const initials = (name = '') =>
+  name.replace(/^(Sri|Smt|Dr|Priest)\.?\s+/i, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
 const translations = {
   en: {
@@ -18,7 +25,10 @@ const translations = {
     position: 'Position',
     email: 'Email',
     phone: 'Phone',
-    experience: 'Experience (years)',
+    department: 'Department',
+    photo: 'Photo',
+    choosePhoto: 'Choose photo',
+    changePhoto: 'Change photo',
     description: 'Description',
     loading: 'Loading...',
     error: 'Error',
@@ -43,7 +53,10 @@ const translations = {
     position: 'స్థానం',
     email: 'ఇమెయిల్',
     phone: 'ఫోన్',
-    experience: 'అనుభవం (సంవత్సరాలు)',
+    department: 'విభాగం',
+    photo: 'ఫోటో',
+    choosePhoto: 'ఫోటో ఎంచుకోండి',
+    changePhoto: 'ఫోటో మార్చండి',
     description: 'వివరణ',
     loading: 'లోడ్ చేస్తోంది...',
     error: 'లోపం',
@@ -68,7 +81,10 @@ const translations = {
     position: 'पद',
     email: 'ईमेल',
     phone: 'फोन',
-    experience: 'अनुभव (वर्ष)',
+    department: 'विभाग',
+    photo: 'फ़ोटो',
+    choosePhoto: 'फ़ोटो चुनें',
+    changePhoto: 'फ़ोटो बदलें',
     description: 'विवरण',
     loading: 'लोड हो रहा है...',
     error: 'त्रुटि',
@@ -96,9 +112,12 @@ export default function StaffAdmin() {
     position: '',
     email: '',
     phoneNumber: '',
-    experience: '',
+    department: 'Religious',
     biography: ''
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   useEffect(() => {
@@ -128,18 +147,36 @@ export default function StaffAdmin() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const { file: prepared, previewUrl } = await prepareImage(file, { maxDimension: 800, namePrefix: 'staff' });
+      setPhotoFile(prepared);
+      setPhotoPreview(previewUrl);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
     try {
+      setSaving(true);
       if (editingId) {
-        await staffAPI.update(editingId, formData);
+        await staffAPI.update(editingId, formData, photoFile);
       } else {
-        await staffAPI.create(formData);
+        await staffAPI.create(formData, photoFile);
       }
       await fetchStaff();
       resetForm();
     } catch (err) {
       setError(err.message || t.error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -149,9 +186,11 @@ export default function StaffAdmin() {
       position: staffMember.position || '',
       email: staffMember.email || '',
       phoneNumber: staffMember.phoneNumber || '',
-      experience: staffMember.experience ?? '',
+      department: staffMember.department || 'Religious',
       biography: staffMember.biography || ''
     });
+    setPhotoFile(null);
+    setPhotoPreview(staffMember.profileImageUrl ? resolveAssetUrl(staffMember.profileImageUrl) : null);
     setEditingId(staffMember.id);
     setShowForm(true);
   };
@@ -172,9 +211,11 @@ export default function StaffAdmin() {
       position: '',
       email: '',
       phoneNumber: '',
-      experience: '',
+      department: 'Religious',
       biography: ''
     });
+    setPhotoFile(null);
+    setPhotoPreview(null);
     setEditingId(null);
     setShowForm(false);
   };
@@ -372,23 +413,40 @@ export default function StaffAdmin() {
               </div>
 
               <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
-                  {t.experience}
+                <label htmlFor="staff-department" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+                  {t.department}
                 </label>
-                <input
-                  type="number"
-                  name="experience"
-                  value={formData.experience}
+                <select
+                  id="staff-department"
+                  name="department"
+                  value={formData.department}
                   onChange={handleInputChange}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    boxSizing: 'border-box'
-                  }}
-                />
+                  style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', background: 'white' }}
+                >
+                  {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <span style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>{t.photo}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{
+                    width: 88, height: 88, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                    border: '2px solid #c98e1b', background: '#4a0c0e',
+                    display: 'grid', placeItems: 'center', color: '#e8c46a', fontSize: 28
+                  }}>
+                    {photoPreview
+                      ? <img src={photoPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <span aria-hidden="true">{initials(formData.fullName) || '🛕'}</span>}
+                  </div>
+                  <label className="btn btn-quiet" style={{ marginTop: 0, cursor: 'pointer' }}>
+                    {photoPreview ? t.changePhoto : t.choosePhoto}
+                    <input type="file" accept="image/*" onChange={handlePhotoChange} className="visually-hidden" />
+                  </label>
+                </div>
+                <p style={{ fontSize: 13, color: '#5b4636', marginTop: 6 }}>
+                  A clear head-and-shoulders photo works best. JPEG, PNG or WebP, up to 10 MB.
+                </p>
               </div>
 
               <div style={{ marginBottom: '20px' }}>
@@ -414,6 +472,7 @@ export default function StaffAdmin() {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   type="submit"
+                  disabled={saving}
                   style={{
                     padding: '12px 24px',
                     backgroundColor: '#4a0c0e',
@@ -427,7 +486,7 @@ export default function StaffAdmin() {
                   onMouseEnter={e => e.target.style.opacity = '0.9'}
                   onMouseLeave={e => e.target.style.opacity = '1'}
                 >
-                  {t.save}
+                  {saving ? t.loading : t.save}
                 </button>
                 <button
                   type="button"
@@ -482,12 +541,25 @@ export default function StaffAdmin() {
                 <div style={{
                   padding: '20px',
                   background: 'linear-gradient(135deg, #4a0c0e 0%, #7e1015 100%)',
-                  color: 'white'
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px'
                 }}>
-                  <h3 style={{ margin: '0 0 5px 0' }}>{member.fullName}</h3>
-                  <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>
-                    {member.position}
+                  <div style={{
+                    width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                    border: '2px solid #c98e1b', display: 'grid', placeItems: 'center', color: '#e8c46a', fontSize: 22
+                  }}>
+                    {member.profileImageUrl
+                      ? <img src={resolveAssetUrl(member.profileImageUrl)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <span aria-hidden="true">{initials(member.fullName)}</span>}
+                  </div>
+                  <div>
+                  <h3 style={{ margin: '0 0 5px 0', color: 'white' }}>{member.fullName}</h3>
+                  <p style={{ margin: 0, fontSize: '13px', opacity: 0.9 }}>
+                    {[member.position, member.department].filter(Boolean).join(' · ')}
                   </p>
+                  </div>
                 </div>
 
                 <div style={{ padding: '20px' }}>
@@ -496,9 +568,6 @@ export default function StaffAdmin() {
                   </p>
                   <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>
                     📞 {member.phoneNumber}
-                  </p>
-                  <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '14px' }}>
-                    ⭐ {member.experience} years experience
                   </p>
                   <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '13px', lineHeight: '1.4' }}>
                     {member.biography && (member.biography.length > 100 ? `${member.biography.substring(0, 100)}…` : member.biography)}

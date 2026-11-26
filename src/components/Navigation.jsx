@@ -34,9 +34,6 @@ export default function Navigation() {
   if (isAdmin && !isAdminPage) {
     links.push({ to: '/home/admin', label: 'Admin' });
   }
-  if (isAdmin) {
-    links.push({ to: '/subscriptions/admin', label: 'Newsletter' });
-  }
 
   return (
     <header className="site-header">

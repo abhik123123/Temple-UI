@@ -46,8 +46,25 @@ export const eventRegistrationAPI = {
 };
 
 export const servicesAPI = crud('services');
-export const staffAPI = crud('staff');
-export const boardMembersAPI = crud('board-members');
+
+/** JSON, or multipart with a JSON part named `partName` plus an optional "photo". */
+const withPhoto = (partName, data, photo) => {
+  if (!photo) return data;
+  const form = new FormData();
+  form.append(partName, new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  form.append('photo', photo, photo.name);
+  return form;
+};
+
+const peopleAPI = (resource, partName) => ({
+  ...crud(resource),
+  create: (person, photo) => body(httpClient.post(`/${resource}`, withPhoto(partName, person, photo))),
+  update: (id, person, photo) =>
+    body(httpClient.put(`/${resource}/${encodeURIComponent(id)}`, withPhoto(partName, person, photo))),
+});
+
+export const staffAPI = peopleAPI('staff', 'staff');
+export const boardMembersAPI = peopleAPI('board-members', 'boardMember');
 
 export const donorsAPI = {
   ...crud('donors'),

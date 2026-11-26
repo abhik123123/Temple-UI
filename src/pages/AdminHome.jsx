@@ -276,6 +276,30 @@ export default function AdminHome() {
             <h3 style={{ color: '#4a0c0e', marginBottom: '0.5rem' }}>Donations</h3>
             <p style={{ color: '#5b4636', fontSize: '0.9rem' }}>Record and review donations</p>
           </div>
+          <div style={{
+            background: 'white',
+            border: '1px solid #f7e8c8',
+            borderRadius: '8px',
+            padding: '2rem',
+            textAlign: 'center',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            cursor: 'pointer',
+            transition: 'transform 0.3s, boxShadow 0.3s'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = 'translateY(-5px)';
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+          }}
+          onClick={() => navigate('/subscriptions/admin')}
+          >
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📧</div>
+            <h3 style={{ color: '#4a0c0e', marginBottom: '0.5rem' }}>Newsletter</h3>
+            <p style={{ color: '#5b4636', fontSize: '0.9rem' }}>Subscribers, test email and weekly news</p>
+          </div>
         </div>
       </div>
     </div>

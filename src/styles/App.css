@@ -138,9 +138,10 @@ nav .nav-links a {
   display: block;
   color: var(--sandal);
   text-decoration: none;
-  padding: 0.45rem 0.7rem;
+  padding: 0.45rem 0.55rem;
   border-radius: var(--radius);
-  font-size: 0.92rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 nav .nav-links a:hover {
@@ -612,7 +613,7 @@ textarea:focus {
 .site-footer__base p { margin: 0 auto; }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1080px) {
+@media (max-width: 1240px) {
   .nav-toggle {
     display: inline-flex;
     margin-left: auto;
