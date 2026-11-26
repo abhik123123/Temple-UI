@@ -926,3 +926,6 @@ textarea:focus {
 .switch:disabled { opacity: 0.6; cursor: default; }
 .switch:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
+
+/* Telugu and Hindi letters join into conjuncts; extra tracking pulls them apart. */
+html:lang(te) *, html:lang(hi) * { letter-spacing: normal !important; }

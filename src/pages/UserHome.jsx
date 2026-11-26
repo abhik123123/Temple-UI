@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import SubscribeNewsletter from '../components/SubscribeNewsletter';
 import { SectionTitle } from '../components/Ornaments';
 import { useLanguage } from '../context/LanguageContext';
+import { dayKey } from '../utils/timingsLabels';
 import { useTempleTimings } from '../hooks/useAPI';
 import { formatTime } from '../utils/format';
 
@@ -47,6 +48,7 @@ const templeWeekday = () =>
   new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' }).format(new Date());
 
 function DarshanToday() {
+  const { t } = useLanguage();
   const { timings, loading, error } = useTempleTimings();
   const today = templeWeekday();
   const sessions = useMemo(
@@ -55,15 +57,15 @@ function DarshanToday() {
   );
 
   let body;
-  if (loading) body = <span>Checking today’s timings…</span>;
-  else if (error) body = <span>Timings are unavailable right now.</span>;
-  else if (sessions.length === 0) body = <span>The temple is closed today.</span>;
+  if (loading) body = <span>{t('today_checking')}</span>;
+  else if (error) body = <span>{t('today_unavailable')}</span>;
+  else if (sessions.length === 0) body = <span>{t('today_closed')}</span>;
   else {
     body = (
       <span>
         {sessions.map((s, i) => (
           <React.Fragment key={s.id ?? i}>
-            {i > 0 && ' and '}
+            {i > 0 && t('today_and')}
             <strong>{formatTime(s.openingTime)}–{formatTime(s.closingTime)}</strong>
           </React.Fragment>
         ))}
@@ -74,9 +76,9 @@ function DarshanToday() {
   return (
     <section className="darshan-today" aria-label="Darshan today">
       <div className="darshan-today__inner">
-        <h2>Darshan today, {WEEKDAYS.includes(today) ? today : ''}</h2>
+        <h2>{t('today_heading')}, {WEEKDAYS.includes(today) ? t(dayKey(today)) : ''}</h2>
         {body}
-        <Link to="/timings">Weekly timings</Link>
+        <Link to="/timings">{t('today_weekly')}</Link>
       </div>
     </section>
   );

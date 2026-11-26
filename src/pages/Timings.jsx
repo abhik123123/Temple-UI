@@ -2,6 +2,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTempleTimings } from '../hooks/useAPI';
 import { formatTime } from '../utils/format';
 import { PageHero } from '../components/Ornaments';
+import { dayKey, translateNote } from '../utils/timingsLabels';
 
 const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const templeToday = () =>
@@ -22,7 +23,7 @@ export default function Timings() {
         
         {loading && (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
-            Loading temple timings...
+            {t('timings_loading')}
           </div>
         )}
 
@@ -37,32 +38,32 @@ export default function Timings() {
             <thead>
               <tr>
                 <th>{t('timings_day')}</th>
-                <th>Darshan</th>
-                <th>Notes</th>
+                <th>{t('timings_darshan')}</th>
+                <th>{t('timings_notes')}</th>
               </tr>
             </thead>
             <tbody>
               {WEEK.map((day) => {
-                const sessions = displayTimings.filter((t) => String(t.dayOfWeek).toLowerCase() === day.toLowerCase());
+                const sessions = displayTimings.filter((s) => String(s.dayOfWeek).toLowerCase() === day.toLowerCase());
                 if (loading || displayTimings.length === 0) return null;
                 const isToday = day === templeToday();
                 return (
                   <tr key={day} className={isToday ? 'is-today' : undefined}>
-                    <td className="day">{day}{isToday && <span className="visually-hidden"> (today)</span>}</td>
+                    <td className="day">{t(dayKey(day))}{isToday && <span className="visually-hidden"> ({t('timings_today')})</span>}</td>
                     <td>
                       {sessions.length === 0
-                        ? 'Closed'
-                        : sessions.map((t) => (
-                            <div key={t.id} className="session">
-                              {formatTime(t.openingTime)} – {formatTime(t.closingTime)}
+                        ? t('timings_closed')
+                        : sessions.map((s) => (
+                            <div key={s.id} className="session">
+                              {formatTime(s.openingTime)} – {formatTime(s.closingTime)}
                             </div>
                           ))}
                     </td>
                     <td>
-                      {sessions.filter((t) => t.specialNotes).map((t) => (
-                        <div key={t.id} className="session">{t.specialNotes}</div>
+                      {sessions.filter((s) => s.specialNotes).map((s) => (
+                        <div key={s.id} className="session">{translateNote(s.specialNotes, t)}</div>
                       ))}
-                      {sessions.every((t) => !t.specialNotes) && '—'}
+                      {sessions.every((s) => !s.specialNotes) && '—'}
                     </td>
                   </tr>
                 );
@@ -70,7 +71,7 @@ export default function Timings() {
               {(!loading && displayTimings.length === 0) && (
                 <tr>
                   <td colSpan="3" style={{ textAlign: 'center', padding: '1rem' }}>
-                    {error ? 'Unable to load timings. Please try again later.' : 'No timing records available.'}
+                    {error ? t('timings_unavailable') : t('timings_none')}
                   </td>
                 </tr>
               )}
@@ -85,12 +86,12 @@ export default function Timings() {
           marginTop: '3rem',
           textAlign: 'center'
         }}>
-          <h3 style={{ color: '#a3171c', marginBottom: '1rem' }}>📍 Location & Contact</h3>
-          <p><strong>Address:</strong> Near Old Market, Hasanparthy, Warangal</p>
-          <p><strong>Phone:</strong> (555) 123-4567</p>
-          <p><strong>Email:</strong> info@rajarajeshwara.com</p>
-          <p><strong>Website:</strong> www.rajarajeshwara.com</p>
-          <button className="btn" style={{ marginTop: '1rem' }}>Get Directions</button>
+          <h3 style={{ color: '#a3171c', marginBottom: '1rem' }}>📍 {t('timings_location')}</h3>
+          <p><strong>{t('label_address')}:</strong> {t('address_line')}</p>
+          <p><strong>{t('label_phone')}:</strong> (555) 123-4567</p>
+          <p><strong>{t('label_email')}:</strong> info@rajarajeshwara.com</p>
+          <p><strong>{t('label_website')}:</strong> www.rajarajeshwara.com</p>
+          <button className="btn" style={{ marginTop: '1rem' }}>{t('get_directions')}</button>
         </div>
       </div>
     </div>
