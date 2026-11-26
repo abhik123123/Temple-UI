@@ -116,6 +116,21 @@ export default function EventsAdmin() {
   const [submitting, setSubmitting] = useState(false);
   const [registrationsFor, setRegistrationsFor] = useState(null);
   const [regCounts, setRegCounts] = useState({});
+  const [savingSwitch, setSavingSwitch] = useState(null);
+
+  const toggleSetting = async (event, key) => {
+    const next = !(event[key] ?? (key === 'registrationOpen'));
+    setSavingSwitch(`${event.id}:${key}`);
+    setEvents((list) => list.map((ev) => (ev.id === event.id ? { ...ev, [key]: next } : ev)));
+    try {
+      await eventsAPI.updateSettings(event.id, { [key]: next });
+    } catch (err) {
+      setEvents((list) => list.map((ev) => (ev.id === event.id ? { ...ev, [key]: !next } : ev)));
+      setError(err.message || t.error);
+    } finally {
+      setSavingSwitch(null);
+    }
+  };
 
   useEffect(() => {
     if (isAdmin) {
@@ -710,6 +725,41 @@ export default function EventsAdmin() {
                     {event.description?.substring(0, 100)}...
                   </p>
 
+                  <div className="event-switches">
+                    {[
+                      {
+                        key: 'registrationOpen',
+                        on: event.registrationOpen !== false,
+                        label: 'Registration open',
+                        hint: 'Devotees see the Register button',
+                      },
+                      {
+                        key: 'attendeeListPublic',
+                        on: event.attendeeListPublic === true,
+                        label: "Show who's coming",
+                        hint: 'Public sees names only, no phone or email',
+                      },
+                    ].map(({ key, on, label, hint }) => {
+                      const id = `sw-${event.id}-${key}`;
+                      return (
+                        <div className="switch-row" key={key}>
+                          <label htmlFor={id}>
+                            {label}
+                            <small>{hint}</small>
+                          </label>
+                          <button
+                            id={id}
+                            type="button"
+                            role="switch"
+                            aria-checked={on}
+                            className="switch"
+                            disabled={savingSwitch === `${event.id}:${key}`}
+                            onClick={() => toggleSetting(event, key)}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                   <button
                     type="button"
                     className="btn"

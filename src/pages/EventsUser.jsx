@@ -4,11 +4,18 @@ import { eventsAPI } from '../services/api';
 import { resolveAssetUrl } from '../services/httpClient';
 import { formatDate, formatTime, parseLocalDate } from '../utils/format';
 import EventRegistrationModal from '../components/EventRegistrationModal';
+import EventAttendees from '../components/EventAttendees';
 
 const translations = {
   en: {
     events: 'Events',
     register: 'Register',
+    regClosed: 'Registration closed',
+    whoIsComing: "Who's coming",
+    devoteesRegistered: 'devotees registered',
+    noAttendees: 'No one has registered yet.',
+    attendeesUnavailable: 'The list is not available right now.',
+    close: 'Close',
     registered: 'Registered',
     viewDetails: 'View Details',
     noEvents: 'No events available',
@@ -25,6 +32,12 @@ const translations = {
   te: {
     events: 'ఈవెంట్‌లు',
     register: 'రిజిస్టర్',
+    regClosed: 'నమోదు ముగిసింది',
+    whoIsComing: 'ఎవరు వస్తున్నారు',
+    devoteesRegistered: 'మంది భక్తులు నమోదు చేసుకున్నారు',
+    noAttendees: 'ఇంకా ఎవరూ నమోదు చేసుకోలేదు.',
+    attendeesUnavailable: 'ఈ జాబితా ప్రస్తుతం అందుబాటులో లేదు.',
+    close: 'మూసివేయి',
     registered: 'నిబంధించబడినవి',
     viewDetails: 'వివరాలను చూడండి',
     noEvents: 'ఈవెంట్‌లు అందుబాటులో లేవు',
@@ -41,6 +54,12 @@ const translations = {
   hi: {
     events: 'कार्यक्रम',
     register: 'पंजीकृत करें',
+    regClosed: 'पंजीकरण बंद है',
+    whoIsComing: 'कौन आ रहा है',
+    devoteesRegistered: 'भक्तों ने पंजीकरण किया',
+    noAttendees: 'अभी तक किसी ने पंजीकरण नहीं किया है।',
+    attendeesUnavailable: 'यह सूची अभी उपलब्ध नहीं है।',
+    close: 'बंद करें',
     registered: 'पंजीकृत',
     viewDetails: 'विवरण देखें',
     noEvents: 'कोई घटना उपलब्ध नहीं है',
@@ -68,6 +87,7 @@ export default function EventsUser() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [registeringEvent, setRegisteringEvent] = useState(null);
+  const [attendeesFor, setAttendeesFor] = useState(null);
 
   useEffect(() => {
     fetchEvents();
@@ -186,15 +206,32 @@ export default function EventsUser() {
                       <button type="button" className="btn btn-quiet" onClick={() => handleViewDetails(event)}>
                         {t.viewDetails}
                       </button>
-                      <button type="button" className="btn" disabled={registered} onClick={() => handleRegister(event)}>
-                        {registered ? t.registered : t.register}
-                      </button>
+                      {event.registrationOpen === false ? (
+                        <span className="event-card__closed">{t.regClosed}</span>
+                      ) : (
+                        <button type="button" className="btn" disabled={registered} onClick={() => handleRegister(event)}>
+                          {registered ? t.registered : t.register}
+                        </button>
+                      )}
                     </div>
+                    {event.attendeeListPublic && (
+                      <button type="button" className="event-card__who" onClick={() => setAttendeesFor(event)}>
+                        {t.whoIsComing}
+                      </button>
+                    )}
                   </div>
                 </article>
               );
             })}
           </div>
+        )}
+
+        {attendeesFor && (
+          <EventAttendees
+            event={attendeesFor}
+            labels={{ ...t, loading: '…' }}
+            onClose={() => setAttendeesFor(null)}
+          />
         )}
 
         {/* Details Modal */}
@@ -263,6 +300,7 @@ export default function EventsUser() {
                 gap: '10px',
                 marginTop: '25px'
               }}>
+                {selectedEvent.registrationOpen !== false && (
                 <button
                   onClick={() => {
                     handleRegister(selectedEvent);
@@ -285,6 +323,7 @@ export default function EventsUser() {
                 >
                   {registeredEvents.has(selectedEvent.id) ? t.registered : t.register}
                 </button>
+                )}
                 <button
                   onClick={() => setShowModal(false)}
                   style={{

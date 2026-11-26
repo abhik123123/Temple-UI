@@ -33,6 +33,9 @@ export const eventsAPI = {
   create: (event, photo) => body(httpClient.post('/events', toEventPayload(event, photo))),
   update: (id, event, photo) =>
     body(httpClient.put(`/events/${encodeURIComponent(id)}`, toEventPayload(event, photo))),
+  /** Admin: { registrationOpen?, attendeeListPublic? } */
+  updateSettings: (id, settings) =>
+    body(httpClient.patch(`/events/${encodeURIComponent(id)}/settings`, settings)),
 };
 
 export const eventRegistrationAPI = {
@@ -41,6 +44,9 @@ export const eventRegistrationAPI = {
     body(httpClient.get(`/events/${encodeURIComponent(eventId)}/registrations`)),
   getStatistics: (eventId) =>
     body(httpClient.get(`/events/${encodeURIComponent(eventId)}/registration-stats`)),
+  /** Public, names only; 404 unless the admin has made the list public. */
+  getPublicAttendees: (eventId) =>
+    body(httpClient.get(`/events/${encodeURIComponent(eventId)}/attendees`)),
   cancel: (registrationId) =>
     body(httpClient.delete(`/events/registrations/${encodeURIComponent(registrationId)}`)),
 };
