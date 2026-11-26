@@ -4,7 +4,9 @@ import SubscribeNewsletter from '../components/SubscribeNewsletter';
 import { SectionTitle } from '../components/Ornaments';
 import { useLanguage } from '../context/LanguageContext';
 import { dayKey } from '../utils/timingsLabels';
-import { useTempleTimings } from '../hooks/useAPI';
+import { useAPI, useTempleTimings } from '../hooks/useAPI';
+import { servicesAPI } from '../services/api';
+import PanchangTicker from '../components/PanchangTicker';
 import { formatTime } from '../utils/format';
 
 const SHIVA_IMAGES = [
@@ -32,14 +34,6 @@ const ABOUT = {
   },
 };
 
-const SEVAS = [
-  { icon: '🔱', title: 'Abhishekam', desc: 'Daily abhishekam to the Shivalingam with milk, water and bilva leaves.' },
-  { icon: '🪔', title: 'Archana and aarti', desc: 'Archana in your family’s name, followed by evening deeparadhana.' },
-  { icon: '🛕', title: 'Festivals', desc: 'Maha Shivaratri, Karthika Masam, Dhanur Masam and Ugadi celebrations.' },
-  { icon: '💍', title: 'Kalyanam and samskaras', desc: 'Weddings, namakaranam, upanayanam and griha pravesham.' },
-  { icon: '🍛', title: 'Bhojanashala', desc: 'Free annadanam on Fridays and weekends for every visitor.' },
-  { icon: '📿', title: 'Vedic classes', desc: 'Slokas, Sanskrit and temple traditions for children and adults.' },
-];
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -84,6 +78,33 @@ function DarshanToday() {
   );
 }
 
+/** Sevas come from Services admin; the section hides until at least one is added. */
+function HomeSevas() {
+  const { t } = useLanguage();
+  const { data } = useAPI(servicesAPI.getAll);
+  const sevas = (Array.isArray(data) ? data : []).filter((s) => s.active !== false).slice(0, 6);
+  if (sevas.length === 0) return null;
+  return (
+    <section className="band-sandal">
+      <div className="container">
+        <SectionTitle title={t('sevas_title')}>{t('sevas_sub')}</SectionTitle>
+        <ul className="seva-list">
+          {sevas.map((seva) => (
+            <li key={seva.id}>
+              {seva.icon && <span className="seva-icon" aria-hidden="true">{seva.icon}</span>}
+              <h3>{seva.name}</h3>
+              {seva.description && <p>{seva.description}</p>}
+            </li>
+          ))}
+        </ul>
+        <p style={{ textAlign: 'center', margin: '1.5rem auto 0' }}>
+          <Link className="btn" to="/services">{t('sevas_all')}</Link>
+        </p>
+      </div>
+    </section>
+  );
+}
+
 export default function UserHome() {
   const { t } = useLanguage();
   const [aboutTab, setAboutTab] = useState('history');
@@ -99,6 +120,8 @@ export default function UserHome() {
 
   return (
     <div className="page">
+      <PanchangTicker />
+
       <section className="home-hero" aria-label="Welcome">
         {SHIVA_IMAGES.map((src, i) => (
           <div
@@ -162,25 +185,7 @@ export default function UserHome() {
         </p>
       </section>
 
-      <section className="band-sandal">
-        <div className="container">
-          <SectionTitle title="Pujas and sevas">
-            Book a seva at the temple office or see the full list with offerings.
-          </SectionTitle>
-          <ul className="seva-list">
-            {SEVAS.map((seva) => (
-              <li key={seva.title}>
-                <span className="seva-icon" aria-hidden="true">{seva.icon}</span>
-                <h3>{seva.title}</h3>
-                <p>{seva.desc}</p>
-              </li>
-            ))}
-          </ul>
-          <p style={{ textAlign: 'center', margin: '1.5rem auto 0' }}>
-            <Link className="btn" to="/services">View all sevas</Link>
-          </p>
-        </div>
-      </section>
+      <HomeSevas />
 
       <section className="invite">
         <h2>Support the temple</h2>

@@ -929,3 +929,41 @@ textarea:focus {
 
 /* Telugu and Hindi letters join into conjuncts; extra tracking pulls them apart. */
 html:lang(te) *, html:lang(hi) * { letter-spacing: normal !important; }
+
+/* ---------- Panchangam ticker (home) ---------- */
+.panchang {
+  display: flex; align-items: stretch;
+  background: var(--sandal-soft);
+  border-bottom: 1px solid var(--sandal);
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.panchang__title {
+  flex: none; margin: 0; display: flex; align-items: center;
+  padding: 0.55rem 1rem;
+  background: var(--kumkum); color: #fff;
+  font-size: 0.9rem; font-weight: 600; white-space: nowrap;
+}
+.panchang__viewport { flex: 1; overflow: hidden; display: flex; align-items: center; }
+.panchang__viewport:focus-visible { outline: 2px solid var(--brass); outline-offset: -2px; }
+.panchang__track {
+  display: flex; width: max-content;
+  animation: panchang-scroll 40s linear infinite;
+}
+.panchang__viewport:hover .panchang__track,
+.panchang__viewport:focus-within .panchang__track { animation-play-state: paused; }
+.panchang__list { display: flex; margin: 0; padding: 0; list-style: none; }
+.panchang__item { padding: 0.55rem 1.75rem; white-space: nowrap; border-right: 1px dotted var(--brass); }
+.panchang__item strong { color: var(--maroon); }
+.panchang__item.is-good strong { color: var(--leaf); }
+.panchang__item.is-bad strong { color: var(--kumkum); }
+@keyframes panchang-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (max-width: 640px) {
+  .panchang { flex-direction: column; }
+  .panchang__title { padding: 0.35rem 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panchang__track { animation: none; width: auto; }
+  .panchang__list { flex-wrap: wrap; }
+  .panchang__list[aria-hidden='true'] { display: none; }
+}
