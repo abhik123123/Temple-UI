@@ -26,3 +26,10 @@ describe('format utils', () => {
     expect(toInputTime('06:00:00')).toBe('06:00');
   });
 });
+
+describe('templeTodayIso', () => {
+  it('returns the India date as YYYY-MM-DD', () => {
+    const { templeTodayIso } = require('./format');
+    expect(templeTodayIso()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});

@@ -56,3 +56,7 @@ export const formatCurrency = (amount, currency = 'INR', locale = 'en-IN') => {
   if (!Number.isFinite(n)) return '';
   return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 2 }).format(n);
 };
+
+/** Today's date at the temple (India, IST) as YYYY-MM-DD. The public site lists events from this date on. */
+export const templeTodayIso = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());

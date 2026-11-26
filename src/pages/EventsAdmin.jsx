@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { eventsAPI } from '../services/api';
 import { resolveAssetUrl } from '../services/httpClient';
-import { formatDate, formatTime, toApiTime, toInputTime } from '../utils/format';
+import { formatDate, formatTime, templeTodayIso, toApiTime, toInputTime } from '../utils/format';
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB before compression
 const MAX_IMAGE_DIMENSION = 1600; // px; keeps uploads small and fast
@@ -663,6 +663,14 @@ export default function EventsAdmin() {
                 <div style={{ padding: '20px' }}>
                   <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>
                     📅 {formatDate(event.date)}
+                    {event.date && String(event.date) < templeTodayIso() && (
+                      <span
+                        title="The public Events page shows events from today onward (India time). Change the date to show it again."
+                        style={{ marginLeft: 8, padding: '2px 8px', borderRadius: 10, fontSize: 12, background: '#efd8a8', color: '#4a0c0e', whiteSpace: 'nowrap' }}
+                      >
+                        Past – not shown on the public page
+                      </span>
+                    )}
                   </p>
                   <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>
                     🕐 {formatTime(event.startTime)}
