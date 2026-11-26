@@ -827,3 +827,55 @@ textarea:focus {
 @media (max-width: 760px) {
   .page-hero__gopuram { display: none; }
 }
+
+/* ---------- Event registrations (admin dialog) ---------- */
+.reg-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(46, 7, 8, 0.6);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 4vh 1rem; overflow-y: auto;
+}
+.reg-dialog {
+  width: min(1100px, 100%);
+  background: var(--plaster);
+  border-top: 4px solid var(--brass);
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(46, 7, 8, 0.45);
+}
+.reg-head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+  padding: 1.25rem 1.5rem 0.75rem;
+  border-bottom: 1px solid var(--sandal);
+}
+.reg-head h2 { margin: 0; color: var(--maroon); font-size: 1.4rem; }
+.reg-meta { margin: 0.25rem 0 0; color: #6b4a3a; }
+.reg-close {
+  background: none; border: 0; font-size: 2rem; line-height: 1;
+  color: var(--maroon); cursor: pointer; padding: 0 0.25rem;
+}
+.reg-close:focus-visible { outline: 2px solid var(--brass); }
+.reg-summary {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem;
+  padding: 0.9rem 1.5rem; background: var(--sandal-soft);
+}
+.reg-summary p { margin: 0; color: var(--ink); }
+.reg-toggle { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; color: var(--ink); }
+.reg-body { padding: 1rem 1.5rem 1.5rem; }
+.reg-muted { color: #7a5c4c; }
+.reg-error { color: var(--kumkum); }
+.reg-table { min-width: 760px; }
+.reg-table td { vertical-align: top; }
+.reg-table tbody + tbody { border-top: 2px solid var(--sandal); }
+.reg-table tbody tr:nth-child(even) { background: transparent; }
+.reg-table tbody:nth-of-type(even) { background: var(--sandal-soft); }
+.reg-table a { color: var(--kumkum); }
+.reg-group { display: block; font-size: 0.8rem; color: #7a5c4c; }
+.reg-badge {
+  display: inline-block; margin-left: 0.5rem; padding: 1px 8px; border-radius: 10px;
+  font-size: 0.75rem; background: #e7d6d6; color: var(--maroon);
+}
+.reg-cancelled td { color: #9a8a80; text-decoration: line-through; }
+.reg-cancelled td .reg-badge { text-decoration: none; }
+.reg-cancel { padding: 0.35rem 0.8rem; font-size: 0.85rem; }
+.reg-body .table-container { margin-top: 0; }
+.reg-summary .btn-quiet { padding: 0.45rem 1rem; font-size: 0.9rem; }

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import { eventsAPI } from '../services/api';
+import { eventsAPI, eventRegistrationAPI } from '../services/api';
+import EventRegistrations from '../components/EventRegistrations';
 import { resolveAssetUrl } from '../services/httpClient';
 import { formatDate, formatTime, templeTodayIso, toApiTime, toInputTime } from '../utils/format';
 
@@ -113,6 +114,8 @@ export default function EventsAdmin() {
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [registrationsFor, setRegistrationsFor] = useState(null);
+  const [regCounts, setRegCounts] = useState({});
 
   useEffect(() => {
     if (isAdmin) {
@@ -123,18 +126,32 @@ export default function EventsAdmin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin]);
 
+  const loadRegistrationCounts = async (list) => {
+    const entries = await Promise.all(
+      list.map(async (ev) => {
+        try {
+          const stats = await eventRegistrationAPI.getStatistics(ev.id);
+          return [ev.id, stats?.totalMembers ?? 0];
+        } catch {
+          return [ev.id, null];
+        }
+      }),
+    );
+    setRegCounts(Object.fromEntries(entries));
+  };
+
   const fetchEvents = async () => {
     try {
       setLoading(true);
       const data = await eventsAPI.getAll();
-      setEvents(
-        (Array.isArray(data) ? data : []).map((event) => ({
-          ...event,
-          date: event.eventDate,
-          imageUrl: resolveAssetUrl(event.imageUrl),
-        }))
-      );
+      const list = (Array.isArray(data) ? data : []).map((event) => ({
+        ...event,
+        date: event.eventDate,
+        imageUrl: resolveAssetUrl(event.imageUrl),
+      }));
+      setEvents(list);
       setError(null);
+      loadRegistrationCounts(list);
     } catch (err) {
       setError(err.message || t.error);
     } finally {
@@ -599,6 +616,16 @@ export default function EventsAdmin() {
           </div>
         )}
 
+        {registrationsFor && (
+          <EventRegistrations
+            event={registrationsFor}
+            onClose={() => {
+              setRegistrationsFor(null);
+              loadRegistrationCounts(events);
+            }}
+          />
+        )}
+
         {/* Events List */}
         {events.length === 0 ? (
           <div style={{
@@ -651,7 +678,7 @@ export default function EventsAdmin() {
                 
                 <div style={{
                   padding: '20px',
-                  backgroundColor: 'linear-gradient(135deg, #4a0c0e 0%, #7e1015 100%)',
+                  background: 'linear-gradient(135deg, #4a0c0e 0%, #7e1015 100%)',
                   color: 'white'
                 }}>
                   <h3 style={{ margin: '0 0 5px 0' }}>{event.title}</h3>
@@ -683,6 +710,15 @@ export default function EventsAdmin() {
                     {event.description?.substring(0, 100)}...
                   </p>
 
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => setRegistrationsFor(event)}
+                    style={{ width: '100%', margin: '0 0 10px 0' }}
+                  >
+                    View registrations
+                    {regCounts[event.id] != null && ` (${regCounts[event.id]} ${regCounts[event.id] === 1 ? 'person' : 'people'})`}
+                  </button>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button
                       onClick={() => handleEdit(event)}
