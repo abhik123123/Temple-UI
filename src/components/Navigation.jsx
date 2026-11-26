@@ -46,7 +46,7 @@ export default function Navigation() {
             <Gopuram />
             <span>
               Raja Rajeshwara
-              <small>Devastanam · Hasaparthy</small>
+              <small>Devastanam · Hasanparthy</small>
             </span>
           </NavLink>
 

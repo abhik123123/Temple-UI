@@ -86,7 +86,7 @@ export default function Timings() {
           textAlign: 'center'
         }}>
           <h3 style={{ color: '#a3171c', marginBottom: '1rem' }}>📍 Location & Contact</h3>
-          <p><strong>Address:</strong> Near Old Market, Hasaparthy, Warangal</p>
+          <p><strong>Address:</strong> Near Old Market, Hasanparthy, Warangal</p>
           <p><strong>Phone:</strong> (555) 123-4567</p>
           <p><strong>Email:</strong> info@rajarajeshwara.com</p>
           <p><strong>Website:</strong> www.rajarajeshwara.com</p>

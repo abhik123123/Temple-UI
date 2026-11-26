@@ -17,7 +17,7 @@ const ABOUT = {
   history: {
     label: 'Our history',
     text:
-      'Raja Rajeshwara Devastanam has served the families of Hasaparthy for generations. Daily abhishekam to Lord Shiva, festivals through the year and the community kitchen are kept alive by priests, volunteers and devotees.',
+      'Raja Rajeshwara Devastanam has served the families of Hasanparthy for generations. Daily abhishekam to Lord Shiva, festivals through the year and the community kitchen are kept alive by priests, volunteers and devotees.',
   },
   temple: {
     label: 'The temple',
@@ -115,7 +115,7 @@ export default function UserHome() {
             </p>
             <h1>{t('home_title')}</h1>
             <p className="home-hero__lead">
-              Abode of Sri Raja Rajeshwara Swamy in Hasaparthy, Warangal. Come for darshan, stay for the aarti.
+              Abode of Sri Raja Rajeshwara Swamy in Hasanparthy, Warangal. Come for darshan, stay for the aarti.
             </p>
             <div className="btn-row">
               <Link className="btn btn-brass" to="/timings">See darshan timings</Link>

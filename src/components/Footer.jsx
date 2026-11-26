@@ -15,7 +15,7 @@ export default function Footer() {
           <Gopuram />
           <div>
             <h2>{t('home_title')}</h2>
-            <p>Near Old Market, Hasaparthy, Warangal, Telangana</p>
+            <p>Near Old Market, Hasanparthy, Warangal, Telangana</p>
             <p>
               <a href="tel:+15551234567">(555) 123-4567</a> ·{' '}
               <a href="mailto:info@rajarajeshwara.com">info@rajarajeshwara.com</a>

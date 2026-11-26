@@ -69,7 +69,7 @@ export const translations = {
     timings_time: 'Time',
     
     // Footer
-    footer_address: 'Near Old Market, Hasaparthy, Warangal',
+    footer_address: 'Near Old Market, Hasanparthy, Warangal',
     footer_contact: 'Contact',
     footer_email: 'Email',
     footer_phone: 'Phone',
@@ -163,7 +163,7 @@ export const translations = {
     timings_time: 'సమయం',
     
     // Footer
-    footer_address: 'పాత మార్కెట్ సమీపంలో, హసారెత్, వారణగల్',
+    footer_address: 'పాత మార్కెట్ సమీపంలో, హసన్‌పర్తి, వరంగల్',
     footer_contact: 'సంప్రదించండి',
     footer_email: 'ఇమెయిల్',
     footer_phone: 'ఫోన్',
@@ -257,7 +257,7 @@ export const translations = {
     timings_time: 'समय',
     
     // Footer
-    footer_address: 'पुरानी बाजार के पास, हसारपेथ, वारंगल',
+    footer_address: 'पुराने बाज़ार के पास, हसनपर्ती, वरंगल',
     footer_contact: 'संपर्क करें',
     footer_email: 'ईमेल',
     footer_phone: 'फोन',
