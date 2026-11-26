@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
+import TempleAudio from './components/TempleAudio';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import UserHome from './pages/UserHome';
@@ -71,6 +72,7 @@ export function AppRoutes() {
         </ErrorBoundary>
       </main>
       <Footer />
+      <TempleAudio />
     </>
   );
 }

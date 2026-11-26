@@ -967,3 +967,24 @@ html:lang(te) *, html:lang(hi) * { letter-spacing: normal !important; }
   .panchang__list { flex-wrap: wrap; }
   .panchang__list[aria-hidden='true'] { display: none; }
 }
+
+/* ---------- Om Namah Shivaya audio button (every page) ---------- */
+.temple-audio {
+  position: fixed; left: 1rem; bottom: 1rem; z-index: 900;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 0.95rem 0.55rem 0.75rem;
+  border: 2px solid var(--brass); border-radius: 999px;
+  background: var(--maroon-deep); color: var(--brass-light);
+  font: inherit; font-size: 0.9rem; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(46, 7, 8, 0.35);
+}
+.temple-audio:hover { background: var(--maroon); }
+.temple-audio:focus-visible { outline: 3px solid var(--brass-light); outline-offset: 3px; }
+.temple-audio.is-playing { color: #fff; border-color: var(--brass-light); }
+.temple-audio.is-playing svg { animation: temple-audio-pulse 2.4s ease-in-out infinite; }
+@keyframes temple-audio-pulse { 50% { transform: scale(1.12); } }
+@media (max-width: 640px) {
+  .temple-audio { padding: 0.6rem; left: 0.75rem; bottom: 0.75rem; }
+  .temple-audio__text { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .temple-audio.is-playing svg { animation: none; } }

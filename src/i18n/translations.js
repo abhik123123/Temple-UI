@@ -1,5 +1,8 @@
 export const translations = {
   en: {
+    audio_om: "Om Namah Shivaya",
+    audio_play: "Play Om Namah Shivaya",
+    audio_mute: "Mute Om Namah Shivaya",
     pc_title: "Today's panchangam",
     pc_sunrise: "Sunrise",
     pc_sunset: "Sunset",
@@ -135,6 +138,9 @@ export const translations = {
   },
   
   te: {
+    audio_om: "ఓం నమః శివాయ",
+    audio_play: "ఓం నమః శివాయ వినండి",
+    audio_mute: "ఓం నమః శివాయ ఆపండి",
     pc_title: "ఈరోజు పంచాంగం",
     pc_sunrise: "సూర్యోదయం",
     pc_sunset: "సూర్యాస్తమయం",
@@ -270,6 +276,9 @@ export const translations = {
   },
   
   hi: {
+    audio_om: "ॐ नमः शिवाय",
+    audio_play: "ॐ नमः शिवाय सुनें",
+    audio_mute: "ॐ नमः शिवाय बंद करें",
     pc_title: "आज का पंचांग",
     pc_sunrise: "सूर्योदय",
     pc_sunset: "सूर्यास्त",
