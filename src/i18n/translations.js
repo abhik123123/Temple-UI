@@ -219,7 +219,7 @@ export const translations = {
     
     // Timings Page
     timings_title: 'దేవాలయ సమయాలు',
-    timings_daily: 'దైనిక షెడ్యూల్',
+    timings_daily: 'దేవాలయ షెడ్యూల్',
     timings_special: 'ప్రత్యేక సందర్భాలు',
     timings_day: 'రోజు',
     timings_time: 'సమయం',
